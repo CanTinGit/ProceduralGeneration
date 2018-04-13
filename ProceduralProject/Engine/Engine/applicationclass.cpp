@@ -23,6 +23,9 @@ ApplicationClass::ApplicationClass()
 	m_SkyDome = 0;
 	m_SkyDomeShader = 0;
 
+	m_Frustum = 0;
+	m_QuadTree = 0;
+
 }
 
 
@@ -118,7 +121,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	// Initialize the terrain object.
 //	result = m_Terrain->Initialize(m_Direct3D->GetDevice(), "../Engine/data/heightmap01.bmp");
-	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 256,256, L"../Engine/data/stone01.dds", L"../Engine/data/dirt02.dds");   //initialise the flat terrain.
+	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 256,256, L"../Engine/data/dirt01.dds");   //initialise the flat terrain.
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);
@@ -251,7 +254,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	// Initialize the light object.
 	m_Light->SetAmbientColor(0.5f, 0.5f, 0.5f, 1.0f);
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
-	m_Light->SetDirection(0.0f,0.0f, 0.75f);
+	m_Light->SetDirection(0.0f,0.0f, -1.0f);
 
 	// Create the sky dome object.
 	m_SkyDome = new SkyDomeClass;
@@ -283,6 +286,28 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	// Create the frustum object.
+	m_Frustum = new FrustumClass;
+	if (!m_Frustum)
+	{
+		return false;
+	}
+
+	// Create the quad tree object.
+	m_QuadTree = new QuadTreeClass;
+	if (!m_QuadTree)
+	{
+		return false;
+	}
+
+	// Initialize the quad tree object.
+	result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 
 }
@@ -290,6 +315,21 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 void ApplicationClass::Shutdown()
 {
+	// Release the quad tree object.
+	if (m_QuadTree)
+	{
+		m_QuadTree->Shutdown();
+		delete m_QuadTree;
+		m_QuadTree = 0;
+	}
+
+	// Release the frustum object.
+	if (m_Frustum)
+	{
+		delete m_Frustum;
+		m_Frustum = 0;
+	}
+
 	// Release the sky dome shader object.
 	if (m_SkyDomeShader)
 	{
@@ -581,27 +621,44 @@ bool ApplicationClass::RenderGraphics()
 	// Reset the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
-	// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_model->Render(m_Direct3D->GetDeviceContext());
+	//// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//m_model->Render(m_Direct3D->GetDeviceContext());
 
-	// Render the model using the multitexture shader.
-	m_MultiTextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_model->GetTextureArray());
+	//// Render the model using the multitexture shader.
+	//m_MultiTextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+	//	m_model->GetTextureArray());
+
+	//// Construct the frustum.
+	//m_Frustum->ConstructFrustum(SCREEN_DEPTH, projectionMatrix, viewMatrix);
+
+	//// Render the terrain using the terrain shader.
+	//result = m_TerrainShader->SetShaderParameters(m_Direct3D->GetDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, m_Light->GetAmbientColor(),
+	//	m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetTexture());
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	//// Render the terrain using the quad tree and terrain shader.
+	//m_QuadTree->Render(m_Frustum, m_Direct3D->GetDeviceContext(), m_TerrainShader);
+
+	//// Set the number of rendered terrain triangles since some were culled.
+	//result = m_Text->SetRenderCount(m_QuadTree->GetDrawCount(), m_Direct3D->GetDeviceContext());
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	// Render the terrain buffers.
 	m_Terrain->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, 
-									 m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(),m_Terrain->GetTexture());
-	if(!result)
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetTexture());
+	if (!result)
 	{
 		return false;
 	}
-
-	//// Render the terrain using the multitexture shader.
-	//m_MultiTextureShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-	//	m_Terrain->GetTexture());
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();

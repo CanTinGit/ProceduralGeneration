@@ -17,7 +17,6 @@
 ///////////////////////
 #include "simplexnoise.h"
 #include "textureclass.h"
-#include "texturearrayclass.h"
 
 /////////////
 // GLOBALS //
@@ -56,15 +55,19 @@ public:
 	~TerrainClass();
 
 	bool Initialize(ID3D11Device*, char*);
-	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight, WCHAR*, WCHAR*);
+	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device* device, bool keydown);
 	int  GetIndexCount();
-	ID3D11ShaderResourceView** GetTexture();
+	ID3D11ShaderResourceView* GetTexture();
 
 	int GetVertexCount();
 	void CopyVertexArray(void*);
+
+	bool Smooth();
+	bool Average(int, int);
+	bool InBounds(int, int);
 
 private:
 	bool LoadHeightMap(char*);
@@ -73,7 +76,7 @@ private:
 	void ShutdownHeightMap();
 
 	void CalculateTextureCoordinates();
-	bool LoadTexture(ID3D11Device*, WCHAR*, WCHAR*);
+	bool LoadTexture(ID3D11Device*, WCHAR*);
 	void ReleaseTexture();
 
 	bool InitializeBuffers(ID3D11Device*);
@@ -86,9 +89,8 @@ private:
 	int m_vertexCount, m_indexCount;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	HeightMapType* m_heightMap;
-	TextureArrayClass* m_TextureArray;
+	TextureClass* m_Texture;
 
-//	int m_vertexCount;
 	VertexType* m_vertices;
 };
 

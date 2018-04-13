@@ -11,7 +11,7 @@ TerrainClass::TerrainClass()
 	m_indexBuffer = 0;
 	m_heightMap = 0;
 	m_terrainGeneratedToggle = false;
-	m_TextureArray = 0;
+	m_Texture = 0;
 	m_vertices = 0;
 }
 
@@ -25,7 +25,7 @@ TerrainClass::~TerrainClass()
 {
 }
 
-bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* textureFilename1, WCHAR* textureFilename2)
+bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* textureFilename1)
 {
 	int index;
 	float height = 0.0;
@@ -59,7 +59,7 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	//even though we are generating a flat terrain, we still need to normalise it. 
 	// Calculate the normals for the terrain data.
 	result = CalculateNormals();
-	if(!result)
+	if (!result)
 	{
 		return false;
 	}
@@ -68,12 +68,12 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	CalculateTextureCoordinates();
 
 	// Load the texture.
-	result = LoadTexture(device, textureFilename1, textureFilename2);
+	result = LoadTexture(device, textureFilename1);
 	if (!result)
 	{
 		return false;
 	}
-
+	
 	// Initialize the vertex and index buffer that hold the geometry for the terrain.
 	result = InitializeBuffers(device);
 	if(!result)
@@ -83,10 +83,11 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 
 	return true;
 }
+
+
 bool TerrainClass::Initialize(ID3D11Device* device, char* heightMapFilename)
 {
 	bool result;
-
 
 	// Load in the height map for the terrain.
 	result = LoadHeightMap(heightMapFilename);
@@ -118,14 +119,14 @@ bool TerrainClass::Initialize(ID3D11Device* device, char* heightMapFilename)
 
 void TerrainClass::Shutdown()
 {
+	// Release the texture.
+	ReleaseTexture();
+
 	// Release the vertex and index buffer.
 	ShutdownBuffers();
 
 	// Release the height map data.
 	ShutdownHeightMap();
-
-	// Release the texture.
-	ReleaseTexture();
 
 	return;
 }
@@ -145,9 +146,9 @@ int TerrainClass::GetIndexCount()
 	return m_indexCount;
 }
 
-ID3D11ShaderResourceView** TerrainClass::GetTexture()
+ID3D11ShaderResourceView* TerrainClass::GetTexture()
 {
-	return m_TextureArray->GetTextureArray();
+	return m_Texture->GetTexture();
 }
 
 bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
@@ -164,28 +165,42 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 		
 
 		//loop through the terrain and set the hieghts how we want. This is where we generate the terrain
-		//in this case I will run a sin-wave through the terrain in one axis.
 
- 		for(int j=64; j<m_terrainHeight-64; j++)
+ 		for(int j=0; j<m_terrainHeight; j++)
 		{
-			for(int i=64; i<m_terrainWidth-64; i++)
+			for(int i=0; i<m_terrainWidth; i++)
 			{			
 				index = (m_terrainHeight * j) + i;
 
 				m_heightMap[index].x = (float)i;
-				m_heightMap[index].y = raw_noise_2d(i, j);
-				if (m_heightMap[index].y > 0.8f)
-				{
-					m_heightMap[index].y = m_heightMap[index].y * 3;
-				}
-				if (m_heightMap[index].y < 0.2f)
-				{
-					m_heightMap[index].y = 0;
-				}
-				//m_heightMap[index].y = (float)(sin((float)i/(m_terrainWidth/12))*6.0); //magic numbers ahoy, just to ramp up the height of the sin function so its visible.
 				m_heightMap[index].z = (float)j;
+				m_heightMap[index].y = raw_noise_2d(i, j);
+				if (m_heightMap[index].y > 0.9f)
+				{
+					m_heightMap[index].y = m_heightMap[index].y * 100;
+				}
+				else if (m_heightMap[index].y > 0.8f)
+				{
+					m_heightMap[index].y = m_heightMap[index].y * 50;
+				}
+				else if (m_heightMap[index].y < -0.9f)
+				{
+					m_heightMap[index].y = m_heightMap[index].y * 30;
+				}
+
+				else if (m_heightMap[index].y < -0.8f)
+				{
+					m_heightMap[index].y = m_heightMap[index].y * 20;
+				}
+
 			}
 		}
+		
+		for (int k = 0; k < 4; k++)
+		{
+			Smooth();
+		}
+
 
 		result = CalculateNormals();
 		if(!result)
@@ -533,20 +548,20 @@ void TerrainClass::CalculateTextureCoordinates()
 	return;
 }
 
-bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1, WCHAR* filename2)
+bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1)
 {
 	bool result;
 
 
 	// Create the texture object.
-	m_TextureArray = new TextureArrayClass;
-	if (!m_TextureArray)
+	m_Texture = new TextureClass;
+	if (!m_Texture)
 	{
 		return false;
 	}
 
 	// Initialize the texture object.
-	result = m_TextureArray->Initialize(device, filename1,filename2);
+	result = m_Texture->Initialize(device, filename1);
 	if (!result)
 	{
 		return false;
@@ -558,11 +573,11 @@ bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1, WCHAR* fi
 void TerrainClass::ReleaseTexture()
 {
 	// Release the texture object.
-	if (m_TextureArray)
+	if (m_Texture)
 	{
-		m_TextureArray->Shutdown();
-		delete m_TextureArray;
-		m_TextureArray = 0;
+		m_Texture->Shutdown();
+		delete m_Texture;
+		m_Texture = 0;
 	}
 
 	return;
@@ -595,7 +610,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 
 	// Create the index array.
 	indices = new unsigned long[m_indexCount];
-	if(!indices)
+	if (!indices)
 	{
 		return false;
 	}
@@ -615,10 +630,12 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 
 			// Upper left.
 			tv = m_heightMap[index3].tv;
+
 			// Modify the texture coordinates to cover the top edge.
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
+			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index3].tu, tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
 			indices[index] = index;
 			index++;
@@ -632,18 +649,21 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
+			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index1].tu, m_heightMap[index1].tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
@@ -657,6 +677,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
+			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
@@ -668,6 +689,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tu == 0.0f) { tu = 1.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index2].x, m_heightMap[index2].y, m_heightMap[index2].z);
+			m_vertices[index].texture = D3DXVECTOR2(tu, m_heightMap[index2].tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
 			indices[index] = index;
 			index++;
@@ -744,8 +766,6 @@ void TerrainClass::ShutdownBuffers()
 	}
 
 	return;
-
-	return;
 }
 
 
@@ -780,4 +800,35 @@ void TerrainClass::CopyVertexArray(void* vertexList)
 {
 	memcpy(vertexList, m_vertices, sizeof(VertexType) * m_vertexCount);
 	return;
+}
+
+//starting the smooth function
+bool TerrainClass::Smooth() {
+	for (int i = 0; i < m_terrainHeight; i++) {
+		for (int j = 0; j < m_terrainWidth; j++) {
+			(Average(i, j));
+		}
+	}
+	return true;
+}
+
+// checking not being outside of bounds
+bool TerrainClass::InBounds(int row, int col) {
+	return row >= 0 && row < (m_terrainHeight - 1) && col >= 0 && col < (m_terrainWidth - 1);
+}
+
+//taking the average
+bool TerrainClass::Average(int row, int col) {
+	int avg = 0.0f;
+	int num = 0.0f;
+	for (int m = row - 1; m <= row + 1; m++) {
+		for (int n = col - 1; n <= col + 1; n++) {
+			if (!InBounds(m, n)) continue;
+
+			avg += m_heightMap[m * m_terrainHeight + n].y;
+			num++;
+		}
+	}
+	m_heightMap[row * m_terrainHeight + col].y = avg / num;
+	return true;
 }

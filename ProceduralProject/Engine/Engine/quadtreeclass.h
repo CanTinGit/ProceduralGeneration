@@ -4,10 +4,12 @@
 #ifndef _QUADTREECLASS_H_
 #define _QUADTREECLASS_H_
 
+
 /////////////
 // GLOBALS //
 /////////////
 const int MAX_TRIANGLES = 10000;
+
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -23,7 +25,6 @@ const int MAX_TRIANGLES = 10000;
 class QuadTreeClass
 {
 private:
-
 	struct VertexType
 	{
 		D3DXVECTOR3 position;
@@ -33,10 +34,10 @@ private:
 
 	struct NodeType
 	{
-		float positionX, positionZ, width;
+        float positionX, positionZ, width;
 		int triangleCount;
 		ID3D11Buffer *vertexBuffer, *indexBuffer;
-		NodeType* nodes[4];
+        NodeType* nodes[4];
 	};
 
 public:

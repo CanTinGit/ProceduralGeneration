@@ -33,6 +33,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "modelclass.h"
 #include "skydomeclass.h"
 #include "skydomeshaderclass.h"
+#include "frustumclass.h"
+#include "quadtreeclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -70,6 +72,9 @@ private:
 	ModelClass* m_model;
 	SkyDomeClass* m_SkyDome;
 	SkyDomeShaderClass* m_SkyDomeShader;
+
+	FrustumClass* m_Frustum;
+	QuadTreeClass* m_QuadTree;
 
 };
 
