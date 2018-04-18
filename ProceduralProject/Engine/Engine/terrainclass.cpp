@@ -174,7 +174,7 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 
 				m_heightMap[index].x = (float)i;
 				m_heightMap[index].z = (float)j;
-				m_heightMap[index].y = raw_noise_2d(i, j);
+				m_heightMap[index].y = raw_noise_2d(i, j) + 0.5f * raw_noise_2d(2*i,2*j) + 0.25* raw_noise_2d(4*i,4*j);
 				if (m_heightMap[index].y > 0.9f)
 				{
 					m_heightMap[index].y = m_heightMap[index].y * 100;
@@ -196,7 +196,7 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 			}
 		}
 		
-		for (int k = 0; k < 4; k++)
+		for (int k = 0; k < 5; k++)
 		{
 			Smooth();
 		}
@@ -656,7 +656,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
-			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
+			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index1].tu, m_heightMap[index1].tv);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;

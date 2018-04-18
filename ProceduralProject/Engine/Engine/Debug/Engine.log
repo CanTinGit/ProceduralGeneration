@@ -56,6 +56,7 @@ c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(608): w
 c:\program files (x86)\microsoft directx sdk (june 2010)\include\d3d10.h(609): warning C4005: 'D3D10_ERROR_FILE_NOT_FOUND': macro redefinition
   c:\program files (x86)\windows kits\8.1\include\shared\winerror.h(50454): note: see previous definition of 'D3D10_ERROR_FILE_NOT_FOUND'
 \\stuhome\homedrive2$\1605702\desktop\proceduralgeneration\proceduralgeneration\proceduralproject\engine\engine\terrainclass.cpp(177): warning C4244: 'argument': conversion from 'int' to 'const float', possible loss of data
+\\stuhome\homedrive2$\1605702\desktop\proceduralgeneration\proceduralgeneration\proceduralproject\engine\engine\terrainclass.cpp(177): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
 \\stuhome\homedrive2$\1605702\desktop\proceduralgeneration\proceduralgeneration\proceduralproject\engine\engine\terrainclass.cpp(822): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 \\stuhome\homedrive2$\1605702\desktop\proceduralgeneration\proceduralgeneration\proceduralproject\engine\engine\terrainclass.cpp(823): warning C4244: 'initializing': conversion from 'float' to 'int', possible loss of data
 \\stuhome\homedrive2$\1605702\desktop\proceduralgeneration\proceduralgeneration\proceduralproject\engine\engine\terrainclass.cpp(828): warning C4244: '+=': conversion from 'float' to 'int', possible loss of data
