@@ -90,6 +90,12 @@
     <ClCompile Include="quadtreeclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="depthshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="textureshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -164,6 +170,12 @@
     <ClInclude Include="quadtreeclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="depthshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="textureshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -188,6 +200,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="skydome.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="depth.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="depth.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

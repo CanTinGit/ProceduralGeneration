@@ -11,7 +11,7 @@
 const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 0.1f;
+const float SCREEN_NEAR = 1.0f;
 
 
 ///////////////////////
@@ -35,6 +35,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "skydomeshaderclass.h"
 #include "frustumclass.h"
 #include "quadtreeclass.h"
+#include "depthshaderclass.h"
+#include "textureshaderclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -75,6 +77,7 @@ private:
 
 	FrustumClass* m_Frustum;
 	QuadTreeClass* m_QuadTree;
+	DepthShaderClass* m_DepthShader;
 
 };
 

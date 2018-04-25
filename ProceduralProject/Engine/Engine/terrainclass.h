@@ -11,6 +11,7 @@
 #include <d3d11.h>
 #include <d3dx10math.h>
 #include <stdio.h>
+#include <time.h>  
 
 ///////////////////////
 // MY CLASS INCLUDES //
@@ -33,7 +34,7 @@ private:
 	struct VertexType
 	{
 		D3DXVECTOR3 position;
-		D3DXVECTOR2 texture;
+		D3DXVECTOR4 texture;
 	    D3DXVECTOR3 normal;
 	};
 
@@ -55,12 +56,13 @@ public:
 	~TerrainClass();
 
 	bool Initialize(ID3D11Device*, char*);
-	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight, WCHAR*);
+	bool InitializeTerrain(ID3D11Device*, int terrainWidth, int terrainHeight, WCHAR*, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 	bool GenerateHeightMap(ID3D11Device* device, bool keydown);
 	int  GetIndexCount();
 	ID3D11ShaderResourceView* GetTexture();
+	ID3D11ShaderResourceView* GetDetailMapTexture();
 
 	int GetVertexCount();
 	void CopyVertexArray(void*);
@@ -76,7 +78,7 @@ private:
 	void ShutdownHeightMap();
 
 	void CalculateTextureCoordinates();
-	bool LoadTexture(ID3D11Device*, WCHAR*);
+	bool LoadTexture(ID3D11Device*, WCHAR*, WCHAR*);
 	void ReleaseTexture();
 
 	bool InitializeBuffers(ID3D11Device*);
@@ -89,7 +91,7 @@ private:
 	int m_vertexCount, m_indexCount;
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	HeightMapType* m_heightMap;
-	TextureClass* m_Texture;
+	TextureClass *m_Texture, *m_DetailTexture;
 
 	VertexType* m_vertices;
 };

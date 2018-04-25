@@ -20,7 +20,7 @@ cbuffer MatrixBuffer
 struct VertexInputType
 {
     float4 position : POSITION;
-	float2 tex : TEXCOORD0;
+	float4 tex : TEXCOORD0;
 	float3 normal : NORMAL;
 
 };
@@ -28,8 +28,9 @@ struct VertexInputType
 struct PixelInputType
 {
     float4 position : SV_POSITION;
-	float2 tex : TEXCOORD0;
+	float4 tex : TEXCOORD0;
 	float3 normal : NORMAL;
+	float4 depthPosition : TEXCOORD1;
 };
 
 
@@ -57,6 +58,9 @@ PixelInputType TerrainVertexShader(VertexInputType input)
 	
     // Normalize the normal vector.
     output.normal = normalize(output.normal);
+
+	// Store the position value in a second input value for depth value calculations.
+    output.depthPosition = output.position;
 
     return output;
 }

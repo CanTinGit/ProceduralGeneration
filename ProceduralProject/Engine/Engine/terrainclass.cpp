@@ -13,6 +13,8 @@ TerrainClass::TerrainClass()
 	m_terrainGeneratedToggle = false;
 	m_Texture = 0;
 	m_vertices = 0;
+
+	m_DetailTexture = 0;
 }
 
 
@@ -25,7 +27,7 @@ TerrainClass::~TerrainClass()
 {
 }
 
-bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* textureFilename1)
+bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* textureFilename1, WCHAR* detailMapFilename)
 {
 	int index;
 	float height = 0.0;
@@ -68,7 +70,7 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	CalculateTextureCoordinates();
 
 	// Load the texture.
-	result = LoadTexture(device, textureFilename1);
+	result = LoadTexture(device, textureFilename1, detailMapFilename);
 	if (!result)
 	{
 		return false;
@@ -177,11 +179,18 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 				m_heightMap[index].y = raw_noise_2d(i, j) + 0.5f * raw_noise_2d(2*i,2*j) + 0.25* raw_noise_2d(4*i,4*j);
 				if (m_heightMap[index].y > 0.9f)
 				{
+					//float radio = 0;
+					//srand((unsigned)time(0));
+					//radio = rand() / double(RAND_MAX);
+					//if (radio > 0.5f)
+					//{
+					//	m_heightMap[index].y = 
+					//}
 					m_heightMap[index].y = m_heightMap[index].y * 100;
 				}
 				else if (m_heightMap[index].y > 0.8f)
 				{
-					m_heightMap[index].y = m_heightMap[index].y * 50;
+					m_heightMap[index].y = m_heightMap[index].y * 80;
 				}
 				else if (m_heightMap[index].y < -0.9f)
 				{
@@ -548,7 +557,7 @@ void TerrainClass::CalculateTextureCoordinates()
 	return;
 }
 
-bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1)
+bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1, WCHAR* detailMapFilename)
 {
 	bool result;
 
@@ -567,11 +576,33 @@ bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1)
 		return false;
 	}
 
+	// Create the detail map texture object.
+	m_DetailTexture = new TextureClass;
+	if (!m_DetailTexture)
+	{
+		return false;
+	}
+
+	// Initialize the detail map texture object.
+	result = m_DetailTexture->Initialize(device, detailMapFilename);
+	if (!result)
+	{
+		return false;
+	}
+
 	return true;
 }
 
 void TerrainClass::ReleaseTexture()
 {
+	// Release the detail map texture object.
+	if (m_DetailTexture)
+	{
+		m_DetailTexture->Shutdown();
+		delete m_DetailTexture;
+		m_DetailTexture = 0;
+	}
+
 	// Release the texture object.
 	if (m_Texture)
 	{
@@ -635,7 +666,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
-			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index3].tu, tv);
+			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index3].tu, tv, 0.0f,0.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
 			indices[index] = index;
 			index++;
@@ -649,21 +680,21 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
-			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
+			m_vertices[index].texture = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
-			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index1].tu, m_heightMap[index1].tv);
+			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
-			m_vertices[index].texture = D3DXVECTOR2(m_heightMap[index1].tu, m_heightMap[index1].tv);
+			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
 			indices[index] = index;
 			index++;
@@ -677,7 +708,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
-			m_vertices[index].texture = D3DXVECTOR2(tu, tv);
+			m_vertices[index].texture = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
 			indices[index] = index;
 			index++;
@@ -689,7 +720,7 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tu == 0.0f) { tu = 1.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index2].x, m_heightMap[index2].y, m_heightMap[index2].z);
-			m_vertices[index].texture = D3DXVECTOR2(tu, m_heightMap[index2].tv);
+			m_vertices[index].texture = D3DXVECTOR4(tu, m_heightMap[index2].tv, 1.0f, 1.0f);
 			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
 			indices[index] = index;
 			index++;
@@ -831,4 +862,9 @@ bool TerrainClass::Average(int row, int col) {
 	}
 	m_heightMap[row * m_terrainHeight + col].y = avg / num;
 	return true;
+}
+
+ID3D11ShaderResourceView* TerrainClass::GetDetailMapTexture()
+{
+	return m_DetailTexture->GetTexture();
 }

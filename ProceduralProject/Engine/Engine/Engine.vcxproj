@@ -84,6 +84,7 @@
     <ClCompile Include="cameraclass.cpp" />
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
+    <ClCompile Include="depthshaderclass.cpp" />
     <ClCompile Include="fontclass.cpp" />
     <ClCompile Include="fontshaderclass.cpp" />
     <ClCompile Include="fpsclass.cpp" />
@@ -104,6 +105,7 @@
     <ClCompile Include="textclass.cpp" />
     <ClCompile Include="texturearrayclass.cpp" />
     <ClCompile Include="textureclass.cpp" />
+    <ClCompile Include="textureshaderclass.cpp" />
     <ClCompile Include="timerclass.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -111,6 +113,7 @@
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
+    <ClInclude Include="depthshaderclass.h" />
     <ClInclude Include="fontclass.h" />
     <ClInclude Include="fontshaderclass.h" />
     <ClInclude Include="fpsclass.h" />
@@ -130,9 +133,12 @@
     <ClInclude Include="textclass.h" />
     <ClInclude Include="texturearrayclass.h" />
     <ClInclude Include="textureclass.h" />
+    <ClInclude Include="textureshaderclass.h" />
     <ClInclude Include="timerclass.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="depth.ps" />
+    <None Include="depth.vs" />
     <None Include="font.ps" />
     <None Include="font.vs" />
     <None Include="multitexture.ps" />
