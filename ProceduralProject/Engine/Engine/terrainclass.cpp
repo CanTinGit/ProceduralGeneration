@@ -11,7 +11,9 @@ TerrainClass::TerrainClass()
 	m_indexBuffer = 0;
 	m_heightMap = 0;
 	m_terrainGeneratedToggle = false;
-	m_Texture = 0;
+	m_GrassTexture = 0;
+	m_SlopeTexture = 0;
+	m_RockTexture = 0;
 	m_vertices = 0;
 
 	m_DetailTexture = 0;
@@ -27,7 +29,8 @@ TerrainClass::~TerrainClass()
 {
 }
 
-bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight, WCHAR* textureFilename1, WCHAR* detailMapFilename)
+bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int terrainHeight,WCHAR* detailMapFilename, WCHAR* grassTextureFilename, WCHAR* slopeTextureFilename,
+	WCHAR* rockTextureFilename)
 {
 	int index;
 	float height = 0.0;
@@ -70,7 +73,7 @@ bool TerrainClass::InitializeTerrain(ID3D11Device* device, int terrainWidth, int
 	CalculateTextureCoordinates();
 
 	// Load the texture.
-	result = LoadTexture(device, textureFilename1, detailMapFilename);
+	result = LoadTexture(device, detailMapFilename, grassTextureFilename, slopeTextureFilename, rockTextureFilename);
 	if (!result)
 	{
 		return false;
@@ -148,10 +151,23 @@ int TerrainClass::GetIndexCount()
 	return m_indexCount;
 }
 
-ID3D11ShaderResourceView* TerrainClass::GetTexture()
+ID3D11ShaderResourceView* TerrainClass::GetGrassTexture()
 {
-	return m_Texture->GetTexture();
+	return m_GrassTexture->GetTexture();
 }
+
+
+ID3D11ShaderResourceView* TerrainClass::GetSlopeTexture()
+{
+	return m_SlopeTexture->GetTexture();
+}
+
+
+ID3D11ShaderResourceView* TerrainClass::GetRockTexture()
+{
+	return m_RockTexture->GetTexture();
+}
+
 
 bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 {
@@ -557,20 +573,48 @@ void TerrainClass::CalculateTextureCoordinates()
 	return;
 }
 
-bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* filename1, WCHAR* detailMapFilename)
+bool TerrainClass::LoadTexture(ID3D11Device* device, WCHAR* detailMapFilename, WCHAR* grassTextureFilename, WCHAR* slopeTextureFilename, WCHAR* rockTextureFilename)
 {
 	bool result;
 
 
-	// Create the texture object.
-	m_Texture = new TextureClass;
-	if (!m_Texture)
+	// Create the grass texture object.
+	m_GrassTexture = new TextureClass;
+	if (!m_GrassTexture)
 	{
 		return false;
 	}
 
-	// Initialize the texture object.
-	result = m_Texture->Initialize(device, filename1);
+	// Initialize the grass texture object.
+	result = m_GrassTexture->Initialize(device, grassTextureFilename);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Create the slope texture object.
+	m_SlopeTexture = new TextureClass;
+	if (!m_SlopeTexture)
+	{
+		return false;
+	}
+
+	// Initialize the slope texture object.
+	result = m_SlopeTexture->Initialize(device, slopeTextureFilename);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Create the rock texture object.
+	m_RockTexture = new TextureClass;
+	if (!m_RockTexture)
+	{
+		return false;
+	}
+
+	// Initialize the rock texture object.
+	result = m_RockTexture->Initialize(device, rockTextureFilename);
 	if (!result)
 	{
 		return false;
@@ -603,14 +647,27 @@ void TerrainClass::ReleaseTexture()
 		m_DetailTexture = 0;
 	}
 
-	// Release the texture object.
-	if (m_Texture)
+	// Release the texture objects.
+	if (m_GrassTexture)
 	{
-		m_Texture->Shutdown();
-		delete m_Texture;
-		m_Texture = 0;
+		m_GrassTexture->Shutdown();
+		delete m_GrassTexture;
+		m_GrassTexture = 0;
 	}
 
+	if (m_SlopeTexture)
+	{
+		m_SlopeTexture->Shutdown();
+		delete m_SlopeTexture;
+		m_SlopeTexture = 0;
+	}
+
+	if (m_RockTexture)
+	{
+		m_RockTexture->Shutdown();
+		delete m_RockTexture;
+		m_RockTexture = 0;
+	}
 	return;
 }
 

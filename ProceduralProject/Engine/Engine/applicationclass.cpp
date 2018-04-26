@@ -123,7 +123,8 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	// Initialize the terrain object.
 //	result = m_Terrain->Initialize(m_Direct3D->GetDevice(), "../Engine/data/heightmap01.bmp");
-	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 256,256, L"../Engine/data/dirt01.dds", L"../Engine/data/detail001.dds");   //initialise the flat terrain.
+	result = m_Terrain->InitializeTerrain(m_Direct3D->GetDevice(), 256,256, L"../Engine/data/detail001.dds", L"../Engine/data/grass.dds", L"../Engine/data/slope.dds",
+		L"../Engine/data/rock.dds");   //initialise the flat terrain.
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the terrain object.", L"Error", MB_OK);
@@ -652,7 +653,8 @@ bool ApplicationClass::RenderGraphics()
 
 	// Render the terrain using the terrain shader.
 	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetTexture(), m_Terrain->GetDetailMapTexture());
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(),m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
+		m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
 	if (!result)
 	{
 		return false;
