@@ -66,6 +66,7 @@ private:
 	bool RenderVerticalBlurToTexture();
 	bool UpSampleTexture();
 	bool Render2DTextureScene();
+	bool Render();
 
 private:
 	InputClass* m_Input;
@@ -80,7 +81,6 @@ private:
 	TextClass* m_Text;
 	TerrainShaderClass* m_TerrainShader;
 	LightClass* m_Light;
-	MultiTextureShaderClass* m_MultiTextureShader;
 	ModelClass* m_model;
 	SkyDomeClass* m_SkyDome;
 	SkyDomeShaderClass* m_SkyDomeShader;

@@ -17,7 +17,7 @@ using namespace std;
 ///////////////////////
 // MY CLASS INCLUDES //
 ///////////////////////
-#include "texturearrayclass.h"
+#include "textureclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -44,19 +44,19 @@ public:
 	ModelClass(const ModelClass&);
 	~ModelClass();
 
-	bool Initialize(ID3D11Device*, char*, WCHAR*, WCHAR*);
+	bool Initialize(ID3D11Device*, char*, WCHAR*);
 	void Shutdown();
 	void Render(ID3D11DeviceContext*);
 
 	int GetIndexCount();
-	ID3D11ShaderResourceView** GetTextureArray();
+	ID3D11ShaderResourceView* GetTexture();
 
 private:
 	bool InitializeBuffers(ID3D11Device*);
 	void ShutdownBuffers();
 	void RenderBuffers(ID3D11DeviceContext*);
 
-	bool LoadTextures(ID3D11Device*, WCHAR*, WCHAR*);
+	bool LoadTexture(ID3D11Device*, WCHAR*);
 	void ReleaseTextures();
 
 	bool LoadModel(char*);
@@ -66,7 +66,7 @@ private:
 	ID3D11Buffer *m_vertexBuffer, *m_indexBuffer;
 	int m_vertexCount, m_indexCount;
 	ModelType* m_model;
-	TextureArrayClass* m_TextureArray;
+	TextureClass* m_Texture;
 };
 
 #endif

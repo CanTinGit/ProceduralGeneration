@@ -18,7 +18,6 @@ ApplicationClass::ApplicationClass()
 	m_Text = 0;
 	m_TerrainShader = 0;
 	m_Light = 0;
-	m_MultiTextureShader = 0;
 	m_model = 0;
 	m_SkyDome = 0;
 	m_SkyDomeShader = 0;
@@ -121,7 +120,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 	
 	// Initialize the model object
-	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/stone01.dds", L"../Engine/data/dirt02.dds");
+	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/stone01.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -243,21 +242,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	if(!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the terrain shader object.", L"Error", MB_OK);
-		return false;
-	}
-
-	// Create the multitexture shader object.
-	m_MultiTextureShader = new MultiTextureShaderClass;
-	if (!m_MultiTextureShader)
-	{
-		return false;
-	}
-
-	// Initialize the multitexture shader object.
-	result = m_MultiTextureShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the multitexture shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -640,14 +624,6 @@ void ApplicationClass::Shutdown()
 		m_TerrainShader = 0;
 	}
 
-	// Release the multitexture shader object.
-	if (m_MultiTextureShader)
-	{
-		m_MultiTextureShader->Shutdown();
-		delete m_MultiTextureShader;
-		m_MultiTextureShader = 0;
-	}
-
 	// Release the text object.
 	if(m_Text)
 	{
@@ -845,54 +821,56 @@ bool ApplicationClass::HandleInput(float frameTime)
 	return true;
 }
 
-//
-//bool ApplicationClass::RenderGraphics()
-//{
-//	bool result;
-//
-//
-//	// First render the scene to a render texture.
-//	result = RenderSceneToTexture();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Next down sample the render texture to a smaller sized texture.
-//	result = DownSampleTexture();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Perform a horizontal blur on the down sampled render texture.
-//	result = RenderHorizontalBlurToTexture();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Now perform a vertical blur on the horizontal blur render texture.
-//	result = RenderVerticalBlurToTexture();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Up sample the final blurred render texture to screen size again.
-//	result = UpSampleTexture();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//
-//	// Render the blurred up sampled render texture to the screen.
-//	result = Render2DTextureScene();
-//	if (!result)
-//	{
-//		return false;
-//	}
-//}
+
+bool ApplicationClass::RenderGraphics()
+{
+	bool result;
+
+
+	//// First render the scene to a render texture.
+	//result = RenderSceneToTexture();
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	//// Next down sample the render texture to a smaller sized texture.
+	//result = DownSampleTexture();
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	//// Perform a horizontal blur on the down sampled render texture.
+	//result = RenderHorizontalBlurToTexture();
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	//// Now perform a vertical blur on the horizontal blur render texture.
+	//result = RenderVerticalBlurToTexture();
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	//// Up sample the final blurred render texture to screen size again.
+	//result = UpSampleTexture();
+	//if (!result)
+	//{
+	//	return false;
+	//}
+
+	// Render the blurred up sampled render texture to the screen.
+	result = Render();
+	if (!result)
+	{
+		return false;
+	}
+
+	return true;
+}
 
 //
 bool ApplicationClass::RenderSceneToTexture()
@@ -1179,7 +1157,7 @@ bool ApplicationClass::Render2DTextureScene()
 
 
 
-bool ApplicationClass::RenderGraphics()
+bool ApplicationClass::Render()
 {
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
 	D3DXVECTOR3 cameraPosition;
@@ -1223,6 +1201,13 @@ bool ApplicationClass::RenderGraphics()
 
 	// Reset the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	//Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	m_model->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+		m_model->GetTexture());
 
 	// Render the terrain buffers.
 	m_Terrain->Render(m_Direct3D->GetDeviceContext());
