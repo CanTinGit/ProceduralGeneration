@@ -37,6 +37,10 @@ const float SCREEN_NEAR = 1.0f;
 #include "quadtreeclass.h"
 #include "depthshaderclass.h"
 #include "textureshaderclass.h"
+#include "horizontalblurshaderclass.h"
+#include "verticalblurshaderclass.h"
+#include "rendertextureclass.h"
+#include "orthowindowclass.h"
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -56,6 +60,12 @@ public:
 private:
 	bool HandleInput(float);
 	bool RenderGraphics();
+	bool RenderSceneToTexture();
+	bool DownSampleTexture();
+	bool RenderHorizontalBlurToTexture();
+	bool RenderVerticalBlurToTexture();
+	bool UpSampleTexture();
+	bool Render2DTextureScene();
 
 private:
 	InputClass* m_Input;
@@ -78,6 +88,12 @@ private:
 	FrustumClass* m_Frustum;
 	QuadTreeClass* m_QuadTree;
 	DepthShaderClass* m_DepthShader;
+	TextureShaderClass *m_TextureShader;
+
+	HorizontalBlurShaderClass* m_HorizontalBlurShader;
+	VerticalBlurShaderClass* m_VerticalBlurShader;
+	RenderTextureClass *m_RenderTexture, *m_DownSampleTexure, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpSampleTexure;
+	OrthoWindowClass *m_SmallWindow, *m_FullScreenWindow;
 
 };
 
