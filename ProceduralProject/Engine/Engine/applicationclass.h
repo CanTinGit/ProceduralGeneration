@@ -8,7 +8,7 @@
 /////////////
 // GLOBALS //
 /////////////
-const bool FULL_SCREEN = true;
+const bool FULL_SCREEN = false;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
 const float SCREEN_NEAR = 0.1f;
@@ -44,6 +44,9 @@ const float SCREEN_NEAR = 0.1f;
 #include "skyplaneclass.h"
 #include "skyplaneshaderclass.h"
 #include "minimapclass.h"
+#include "reflectionshaderclass.h"
+#include "waterclass.h"
+#include "watershaderclass.h"
 
 
 
@@ -71,6 +74,8 @@ private:
 	bool UpSampleTexture();
 	bool Render2DTextureScene();
 	bool Render();
+	void RenderRefractionToTexture();
+	void RenderReflectionToTexture();
 
 private:
 	InputClass* m_Input;
@@ -101,6 +106,11 @@ private:
 	RenderTextureClass *m_RenderTexture, *m_DownSampleTexure, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpSampleTexure;
 	OrthoWindowClass *m_SmallWindow, *m_FullScreenWindow;
 	MiniMapClass* m_MiniMap;
+
+	RenderTextureClass *m_RefractionTexture, *m_ReflectionTexture;
+	ReflectionShaderClass* m_ReflectionShader;
+	WaterClass* m_Water;
+	WaterShaderClass* m_WaterShader;
 
 };
 

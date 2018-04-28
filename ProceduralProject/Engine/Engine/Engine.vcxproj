@@ -100,6 +100,7 @@
     <ClCompile Include="orthowindowclass.cpp" />
     <ClCompile Include="positionclass.cpp" />
     <ClCompile Include="quadtreeclass.cpp" />
+    <ClCompile Include="reflectionshaderclass.cpp" />
     <ClCompile Include="rendertextureclass.cpp" />
     <ClCompile Include="simplexnoise.cpp" />
     <ClCompile Include="skydomeclass.cpp" />
@@ -115,6 +116,8 @@
     <ClCompile Include="textureshaderclass.cpp" />
     <ClCompile Include="timerclass.cpp" />
     <ClCompile Include="verticalblurshaderclass.cpp" />
+    <ClCompile Include="waterclass.cpp" />
+    <ClCompile Include="watershaderclass.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
@@ -136,6 +139,7 @@
     <ClInclude Include="orthowindowclass.h" />
     <ClInclude Include="positionclass.h" />
     <ClInclude Include="quadtreeclass.h" />
+    <ClInclude Include="reflectionshaderclass.h" />
     <ClInclude Include="rendertextureclass.h" />
     <ClInclude Include="simplexnoise.h" />
     <ClInclude Include="skydomeclass.h" />
@@ -151,6 +155,8 @@
     <ClInclude Include="textureshaderclass.h" />
     <ClInclude Include="timerclass.h" />
     <ClInclude Include="verticalblurshaderclass.h" />
+    <ClInclude Include="waterclass.h" />
+    <ClInclude Include="watershaderclass.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="depth.ps" />
@@ -161,6 +167,8 @@
     <None Include="horizontalblur.vs" />
     <None Include="multitexture.ps" />
     <None Include="multitexture.vs" />
+    <None Include="reflection.ps" />
+    <None Include="reflection.vs" />
     <None Include="skydome.ps" />
     <None Include="skydome.vs" />
     <None Include="skyplane.ps" />
@@ -171,6 +179,8 @@
     <None Include="texture.vs" />
     <None Include="verticalblur.ps" />
     <None Include="verticalblur.vs" />
+    <None Include="water.ps" />
+    <None Include="water.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

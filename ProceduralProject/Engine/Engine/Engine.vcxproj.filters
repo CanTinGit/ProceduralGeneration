@@ -120,6 +120,15 @@
     <ClCompile Include="minimapclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="reflectionshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="waterclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="watershaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -224,6 +233,15 @@
     <ClInclude Include="bitmapclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="reflectionshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="waterclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="watershaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -278,6 +296,18 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="skyplane.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="reflection.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="reflection.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="water.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="water.ps">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
