@@ -294,20 +294,20 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-	//// Create the quad tree object.
-	//m_QuadTree = new QuadTreeClass;
-	//if (!m_QuadTree)
-	//{
-	//	return false;
-	//}
+	// Create the quad tree object.
+	m_QuadTree = new QuadTreeClass;
+	if (!m_QuadTree)
+	{
+		return false;
+	}
 
-	//// Initialize the quad tree object.
-	//result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
-	//if (!result)
-	//{
-	//	MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
-	//	return false;
-	//}
+	// Initialize the quad tree object.
+	result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
+		return false;
+	}
 
 	// Create the depth shader object.
 	m_DepthShader = new DepthShaderClass;
@@ -749,7 +749,7 @@ bool ApplicationClass::Frame()
 	}
 
 	// Render the graphics.
-	result = RenderGraphics();
+	result = Render();
 	if(!result)
 	{
 		return false;
@@ -826,43 +826,42 @@ bool ApplicationClass::RenderGraphics()
 {
 	bool result;
 
+	// First render the scene to a render texture.
+	result = RenderSceneToTexture();
+	if (!result)
+	{
+		return false;
+	}
 
-	//// First render the scene to a render texture.
-	//result = RenderSceneToTexture();
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Next down sample the render texture to a smaller sized texture.
+	result = DownSampleTexture();
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Next down sample the render texture to a smaller sized texture.
-	//result = DownSampleTexture();
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Perform a horizontal blur on the down sampled render texture.
+	result = RenderHorizontalBlurToTexture();
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Perform a horizontal blur on the down sampled render texture.
-	//result = RenderHorizontalBlurToTexture();
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Now perform a vertical blur on the horizontal blur render texture.
+	result = RenderVerticalBlurToTexture();
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Now perform a vertical blur on the horizontal blur render texture.
-	//result = RenderVerticalBlurToTexture();
-	//if (!result)
-	//{
-	//	return false;
-	//}
+	// Up sample the final blurred render texture to screen size again.
+	result = UpSampleTexture();
+	if (!result)
+	{
+		return false;
+	}
 
-	//// Up sample the final blurred render texture to screen size again.
-	//result = UpSampleTexture();
-	//if (!result)
-	//{
-	//	return false;
-	//}
-
-	// Render the blurred up sampled render texture to the screen.
+	// Render the whole scene
 	result = Render();
 	if (!result)
 	{
@@ -871,6 +870,97 @@ bool ApplicationClass::RenderGraphics()
 
 	return true;
 }
+
+bool ApplicationClass::Render()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	D3DXVECTOR3 cameraPosition;
+	bool result;
+
+
+	// Clear the scene.
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+	// Get the position of the camera.
+	cameraPosition = m_Camera->GetPosition();
+
+	// Translate the sky dome to be centered around the camera position.
+	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
+
+	// Turn off back face culling.
+	m_Direct3D->TurnOffCulling();
+
+	// Turn off the Z buffer.
+	m_Direct3D->TurnZBufferOff();
+
+	// Render the sky dome using the sky dome shader.
+	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
+	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
+
+	// Turn back face culling back on.
+	m_Direct3D->TurnOnCulling();
+
+	// Turn the Z buffer back on.
+	m_Direct3D->TurnZBufferOn();
+
+
+	// Reset the world matrix.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+
+	////Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	//m_model->Render(m_Direct3D->GetDeviceContext());
+
+	//// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
+	//result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+	//	m_UpSampleTexure->GetShaderResourceView());
+
+	// Render the terrain buffers.
+	m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the terrain using the terrain shader.
+	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
+		m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// Turn on the alpha blending before rendering the text.
+	m_Direct3D->TurnOnAlphaBlending();
+
+	// Render the text user interface elements.
+	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Turn off alpha blending after rendering the text.
+	m_Direct3D->TurnOffAlphaBlending();
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	m_Direct3D->EndScene();
+
+	return true;
+}
+
 
 //
 bool ApplicationClass::RenderSceneToTexture()
@@ -1156,98 +1246,6 @@ bool ApplicationClass::Render2DTextureScene()
 
 
 
-
-bool ApplicationClass::Render()
-{
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
-	D3DXVECTOR3 cameraPosition;
-	bool result;
-
-
-	// Clear the scene.
-	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
-
-	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_Direct3D->GetProjectionMatrix(projectionMatrix);
-	m_Direct3D->GetOrthoMatrix(orthoMatrix);
-
-	// Get the position of the camera.
-	cameraPosition = m_Camera->GetPosition();
-
-	// Translate the sky dome to be centered around the camera position.
-	D3DXMatrixTranslation(&worldMatrix, cameraPosition.x, cameraPosition.y, cameraPosition.z);
-
-	// Turn off back face culling.
-	m_Direct3D->TurnOffCulling();
-
-	// Turn off the Z buffer.
-	m_Direct3D->TurnZBufferOff();
-
-	// Render the sky dome using the sky dome shader.
-	m_SkyDome->Render(m_Direct3D->GetDeviceContext());
-	m_SkyDomeShader->Render(m_Direct3D->GetDeviceContext(), m_SkyDome->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_SkyDome->GetApexColor(), m_SkyDome->GetCenterColor());
-
-	// Turn back face culling back on.
-	m_Direct3D->TurnOnCulling();
-
-	// Turn the Z buffer back on.
-	m_Direct3D->TurnZBufferOn();
-
-	// Reset the world matrix.
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-
-	//Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_model->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-		m_model->GetTexture());
-
-	// Render the terrain buffers.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
-		m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_Direct3D->TurnZBufferOff();
-
-	// Turn on the alpha blending before rendering the text.
-	m_Direct3D->TurnOnAlphaBlending();
-
-	// Render the text user interface elements.
-	result = m_Text->Render(m_Direct3D->GetDeviceContext(), m_FontShader, worldMatrix, orthoMatrix);
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn off alpha blending after rendering the text.
-	m_Direct3D->TurnOffAlphaBlending();
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_Direct3D->TurnZBufferOn();
-
-	// Present the rendered scene to the screen.
-	m_Direct3D->EndScene();
-
-	return true;
-}
-
-
-
 //// Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 //m_model->Render(m_Direct3D->GetDeviceContext());
 
@@ -1255,20 +1253,22 @@ bool ApplicationClass::Render()
 //m_MultiTextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
 //	m_model->GetTextureArray());
 
+
 //// Construct the frustum.
 //m_Frustum->ConstructFrustum(SCREEN_DEPTH, projectionMatrix, viewMatrix);
-
+//
 //// Render the terrain using the terrain shader.
 //result = m_TerrainShader->SetShaderParameters(m_Direct3D->GetDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, m_Light->GetAmbientColor(),
-//	m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetTexture());
+//	m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
+//	m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
 //if (!result)
 //{
 //	return false;
 //}
-
+//
 //// Render the terrain using the quad tree and terrain shader.
 //m_QuadTree->Render(m_Frustum, m_Direct3D->GetDeviceContext(), m_TerrainShader);
-
+//
 //// Set the number of rendered terrain triangles since some were culled.
 //result = m_Text->SetRenderCount(m_QuadTree->GetDrawCount(), m_Direct3D->GetDeviceContext());
 //if (!result)
