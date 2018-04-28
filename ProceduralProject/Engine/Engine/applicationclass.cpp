@@ -287,27 +287,27 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
-	// Create the frustum object.
-	m_Frustum = new FrustumClass;
-	if (!m_Frustum)
-	{
-		return false;
-	}
+	//// Create the frustum object.
+	//m_Frustum = new FrustumClass;
+	//if (!m_Frustum)
+	//{
+	//	return false;
+	//}
 
-	// Create the quad tree object.
-	m_QuadTree = new QuadTreeClass;
-	if (!m_QuadTree)
-	{
-		return false;
-	}
+	//// Create the quad tree object.
+	//m_QuadTree = new QuadTreeClass;
+	//if (!m_QuadTree)
+	//{
+	//	return false;
+	//}
 
-	// Initialize the quad tree object.
-	result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
-		return false;
-	}
+	//// Initialize the quad tree object.
+	//result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
+	//if (!result)
+	//{
+	//	MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
+	//	return false;
+	//}
 
 	// Create the depth shader object.
 	m_DepthShader = new DepthShaderClass;
