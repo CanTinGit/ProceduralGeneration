@@ -72,6 +72,7 @@ public:
 	bool Smooth();
 	bool Average(int, int);
 	bool InBounds(int, int);
+	void GetTerrainSize(int&, int&);
 
 private:
 	bool LoadHeightMap(char*);

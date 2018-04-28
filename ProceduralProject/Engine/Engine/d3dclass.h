@@ -59,6 +59,8 @@ public:
 	void SetBackBufferRenderTarget();
 	void ResetViewport();
 
+	void EnableSecondBlendState();
+
 
 private:
 	bool m_vsync_enabled;
@@ -80,6 +82,8 @@ private:
 	ID3D11BlendState* m_alphaEnableBlendingState;
 	ID3D11BlendState* m_alphaDisableBlendingState;
 	ID3D11RasterizerState* m_rasterStateNoCulling;
+
+	ID3D11BlendState* m_alphaBlendState2;
 };
 
 #endif

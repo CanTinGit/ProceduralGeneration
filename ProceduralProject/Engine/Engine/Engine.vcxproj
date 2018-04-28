@@ -81,6 +81,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="applicationclass.cpp" />
+    <ClCompile Include="bitmapclass.cpp" />
     <ClCompile Include="cameraclass.cpp" />
     <ClCompile Include="cpuclass.cpp" />
     <ClCompile Include="d3dclass.cpp" />
@@ -93,6 +94,7 @@
     <ClCompile Include="inputclass.cpp" />
     <ClCompile Include="lightclass.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="minimapclass.cpp" />
     <ClCompile Include="modelclass.cpp" />
     <ClCompile Include="multitextureshaderclass.cpp" />
     <ClCompile Include="orthowindowclass.cpp" />
@@ -102,6 +104,8 @@
     <ClCompile Include="simplexnoise.cpp" />
     <ClCompile Include="skydomeclass.cpp" />
     <ClCompile Include="skydomeshaderclass.cpp" />
+    <ClCompile Include="skyplaneclass.cpp" />
+    <ClCompile Include="skyplaneshaderclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
     <ClCompile Include="terrainshaderclass.cpp" />
@@ -114,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h" />
+    <ClInclude Include="bitmapclass.h" />
     <ClInclude Include="cameraclass.h" />
     <ClInclude Include="cpuclass.h" />
     <ClInclude Include="d3dclass.h" />
@@ -125,6 +130,7 @@
     <ClInclude Include="horizontalblurshaderclass.h" />
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />
+    <ClInclude Include="minimapclass.h" />
     <ClInclude Include="modelclass.h" />
     <ClInclude Include="multitextureshaderclass.h" />
     <ClInclude Include="orthowindowclass.h" />
@@ -134,6 +140,8 @@
     <ClInclude Include="simplexnoise.h" />
     <ClInclude Include="skydomeclass.h" />
     <ClInclude Include="skydomeshaderclass.h" />
+    <ClInclude Include="skyplaneclass.h" />
+    <ClInclude Include="skyplaneshaderclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />
     <ClInclude Include="terrainshaderclass.h" />
@@ -155,6 +163,8 @@
     <None Include="multitexture.vs" />
     <None Include="skydome.ps" />
     <None Include="skydome.vs" />
+    <None Include="skyplane.ps" />
+    <None Include="skyplane.vs" />
     <None Include="terrain.ps" />
     <None Include="terrain.vs" />
     <None Include="texture.ps" />

@@ -925,3 +925,12 @@ ID3D11ShaderResourceView* TerrainClass::GetDetailMapTexture()
 {
 	return m_DetailTexture->GetTexture();
 }
+
+void TerrainClass::GetTerrainSize(int& width, int& height)
+{
+	// Return the width and height of the terrain.
+	width = m_terrainWidth;
+	height = m_terrainHeight;
+
+	return;
+}

@@ -108,6 +108,18 @@
     <ClCompile Include="verticalblurshaderclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="skyplaneclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="skyplaneshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="bitmapclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="minimapclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -200,6 +212,18 @@
     <ClInclude Include="verticalblurshaderclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="skyplaneclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="skyplaneshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="minimapclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="bitmapclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -248,6 +272,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="texture.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="skyplane.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="skyplane.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

@@ -38,6 +38,9 @@ ApplicationClass::ApplicationClass()
 	m_FullScreenWindow = 0;
 	m_TextureShader = 0;
 
+	m_SkyPlane = 0;
+	m_SkyPlaneShader = 0;
+	m_MiniMap = 0;
 }
 
 
@@ -61,6 +64,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	int downSampleWidth, downSampleHeight;
 	downSampleWidth = screenWidth / 2;
 	downSampleHeight = screenHeight / 2;
+	int terrainWidth, terrainHeight;
 
 	
 	// Create the input object.  The input object will be used to handle reading the keyboard and mouse input from the user.
@@ -257,6 +261,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	m_Light->SetDiffuseColor(1.0f, 1.0f, 1.0f, 1.0f);
 	m_Light->SetDirection(0.0f,0.0f, -1.0f);
 
+
 	// Create the sky dome object.
 	m_SkyDome = new SkyDomeClass;
 	if (!m_SkyDome)
@@ -286,6 +291,37 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		MessageBox(hwnd, L"Could not initialize the sky dome shader object.", L"Error", MB_OK);
 		return false;
 	}
+
+	// Create the sky plane object.
+	m_SkyPlane = new SkyPlaneClass;
+	if (!m_SkyPlane)
+	{
+		return false;
+	}
+
+	// Initialize the sky plane object.
+	result = m_SkyPlane->Initialize(m_Direct3D->GetDevice(), L"../Engine/data/cloud001.dds", L"../Engine/data/perturb001.dds");
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the sky plane object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the sky plane shader object.
+	m_SkyPlaneShader = new SkyPlaneShaderClass;
+	if (!m_SkyPlaneShader)
+	{
+		return false;
+	}
+
+	// Initialize the sky plane shader object.
+	result = m_SkyPlaneShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the sky plane shader object.", L"Error", MB_OK);
+		return false;
+	}
+
 
 	//// Create the frustum object.
 	//m_Frustum = new FrustumClass;
@@ -474,6 +510,26 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	// Get the size of the terrain as the minimap will require this information.
+	m_Terrain->GetTerrainSize(terrainWidth, terrainHeight);
+
+	// Create the mini map object.
+	m_MiniMap = new MiniMapClass;
+	if (!m_MiniMap)
+	{
+		return false;
+	}
+
+	// Initialize the mini map object.
+	result = m_MiniMap->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, baseViewMatrix, (float)(terrainWidth - 1),
+		(float)(terrainHeight - 1));
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the mini map object.", L"Error", MB_OK);
+		return false;
+	}
+
+
 	return true;
 
 }
@@ -481,6 +537,14 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 void ApplicationClass::Shutdown()
 {
+	// Release the mini map object.
+	if (m_MiniMap)
+	{
+		m_MiniMap->Shutdown();
+		delete m_MiniMap;
+		m_MiniMap = 0;
+	}
+
 	// Release texture shader object.
 	if (m_TextureShader)
 	{
@@ -583,6 +647,23 @@ void ApplicationClass::Shutdown()
 		delete m_Frustum;
 		m_Frustum = 0;
 	}
+
+	// Release the sky plane shader object.
+	if (m_SkyPlaneShader)
+	{
+		m_SkyPlaneShader->Shutdown();
+		delete m_SkyPlaneShader;
+		m_SkyPlaneShader = 0;
+	}
+
+	// Release the sky plane object.
+	if (m_SkyPlane)
+	{
+		m_SkyPlane->Shutdown();
+		delete m_SkyPlane;
+		m_SkyPlane = 0;
+	}
+
 
 	// Release the sky dome shader object.
 	if (m_SkyDomeShader)
@@ -748,6 +829,9 @@ bool ApplicationClass::Frame()
 		return false;
 	}
 
+	// Do the sky plane frame processing.
+	m_SkyPlane->Frame();
+
 	// Render the graphics.
 	result = Render();
 	if(!result)
@@ -817,6 +901,9 @@ bool ApplicationClass::HandleInput(float frameTime)
 	{
 		return false;
 	}
+
+	// Update the location of the camera on the mini map.
+	m_MiniMap->PositionUpdate(posX, posZ);
 
 	return true;
 }
@@ -910,9 +997,21 @@ bool ApplicationClass::Render()
 	// Turn back face culling back on.
 	m_Direct3D->TurnOnCulling();
 
+	// Enable additive blending so the clouds blend with the sky dome color.
+	m_Direct3D->EnableSecondBlendState();
+
+	// Render the sky plane using the sky plane shader.
+	m_SkyPlane->Render(m_Direct3D->GetDeviceContext());
+
+	m_SkyPlaneShader->Render(m_Direct3D->GetDeviceContext(), m_SkyPlane->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+		m_SkyPlane->GetCloudTexture(), m_SkyPlane->GetPerturbTexture(), m_SkyPlane->GetTranslation(), m_SkyPlane->GetScale(),
+		m_SkyPlane->GetBrightness());
+
+	// Turn off blending.
+	m_Direct3D->TurnOffAlphaBlending();
+
 	// Turn the Z buffer back on.
 	m_Direct3D->TurnZBufferOn();
-
 
 	// Reset the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
@@ -938,6 +1037,13 @@ bool ApplicationClass::Render()
 
 	// Turn off the Z buffer to begin all 2D rendering.
 	m_Direct3D->TurnZBufferOff();
+
+	// Render the mini map.
+	result = m_MiniMap->Render(m_Direct3D->GetDeviceContext(), worldMatrix, orthoMatrix, m_TextureShader);
+	if (!result)
+	{
+		return false;
+	}
 
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();

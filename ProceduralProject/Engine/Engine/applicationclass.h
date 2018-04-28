@@ -8,10 +8,10 @@
 /////////////
 // GLOBALS //
 /////////////
-const bool FULL_SCREEN = false;
+const bool FULL_SCREEN = true;
 const bool VSYNC_ENABLED = true;
 const float SCREEN_DEPTH = 1000.0f;
-const float SCREEN_NEAR = 1.0f;
+const float SCREEN_NEAR = 0.1f;
 
 
 ///////////////////////
@@ -41,6 +41,10 @@ const float SCREEN_NEAR = 1.0f;
 #include "verticalblurshaderclass.h"
 #include "rendertextureclass.h"
 #include "orthowindowclass.h"
+#include "skyplaneclass.h"
+#include "skyplaneshaderclass.h"
+#include "minimapclass.h"
+
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -84,6 +88,8 @@ private:
 	ModelClass* m_model;
 	SkyDomeClass* m_SkyDome;
 	SkyDomeShaderClass* m_SkyDomeShader;
+	SkyPlaneClass *m_SkyPlane;
+	SkyPlaneShaderClass* m_SkyPlaneShader;
 
 	FrustumClass* m_Frustum;
 	QuadTreeClass* m_QuadTree;
@@ -94,6 +100,7 @@ private:
 	VerticalBlurShaderClass* m_VerticalBlurShader;
 	RenderTextureClass *m_RenderTexture, *m_DownSampleTexure, *m_HorizontalBlurTexture, *m_VerticalBlurTexture, *m_UpSampleTexure;
 	OrthoWindowClass *m_SmallWindow, *m_FullScreenWindow;
+	MiniMapClass* m_MiniMap;
 
 };
 
