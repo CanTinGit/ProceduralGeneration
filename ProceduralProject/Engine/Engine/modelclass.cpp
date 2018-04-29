@@ -116,7 +116,7 @@ bool ModelClass::InitializeBuffers(ID3D11Device* device)
 	// Load the vertex array and index array with data.
 	for(i=0; i<m_vertexCount; i++)
 	{
-		vertices[i].position = D3DXVECTOR3(m_model[i].x+10 , m_model[i].y+5, m_model[i].z+30);
+		vertices[i].position = D3DXVECTOR3(m_model[i].x, m_model[i].y, m_model[i].z);
 		vertices[i].texture = D3DXVECTOR2(m_model[i].tu, m_model[i].tv);
 
 		indices[i] = i;
@@ -320,4 +320,9 @@ void ModelClass::ReleaseModel()
 	}
 
 	return;
+}
+
+D3DXVECTOR3 ModelClass::GetPosition()
+{
+	return D3DXVECTOR3(m_model[0].x, m_model[0].y, m_model[0].z);
 }

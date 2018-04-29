@@ -202,7 +202,7 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 					//{
 					//	m_heightMap[index].y = 
 					//}
-					m_heightMap[index].y = m_heightMap[index].y * 100;
+					m_heightMap[index].y = m_heightMap[index].y * 200;
 				}
 				else if (m_heightMap[index].y > 0.8f)
 				{
@@ -723,9 +723,9 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index3].x, m_heightMap[index3].y, m_heightMap[index3].z);
-			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index3].tu, tv, 0.0f,0.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(m_heightMap[index3].tu, tv, 0.0f,0.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index3].nx, m_heightMap[index3].ny, m_heightMap[index3].nz);
+			indices[index]             = index;
 			index++;
 
 			// Upper right.
@@ -737,23 +737,23 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
-			m_vertices[index].texture = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
+			indices[index]             = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
-			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
+			indices[index]             = index;
 			index++;
 
 			// Bottom left.
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index1].x, m_heightMap[index1].y, m_heightMap[index1].z);
-			m_vertices[index].texture = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(m_heightMap[index1].tu, m_heightMap[index1].tv, 0.0f, 1.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index1].nx, m_heightMap[index1].ny, m_heightMap[index1].nz);
+			indices[index]             = index;
 			index++;
 
 			// Upper right.
@@ -765,9 +765,9 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tv == 1.0f) { tv = 0.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index4].x, m_heightMap[index4].y, m_heightMap[index4].z);
-			m_vertices[index].texture = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(tu, tv, 1.0f, 0.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index4].nx, m_heightMap[index4].ny, m_heightMap[index4].nz);
+			indices[index]             = index;
 			index++;
 
 			// Bottom right.
@@ -777,24 +777,24 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 			if (tu == 0.0f) { tu = 1.0f; }
 
 			m_vertices[index].position = D3DXVECTOR3(m_heightMap[index2].x, m_heightMap[index2].y, m_heightMap[index2].z);
-			m_vertices[index].texture = D3DXVECTOR4(tu, m_heightMap[index2].tv, 1.0f, 1.0f);
-			m_vertices[index].normal = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
-			indices[index] = index;
+			m_vertices[index].texture  = D3DXVECTOR4(tu, m_heightMap[index2].tv, 1.0f, 1.0f);
+			m_vertices[index].normal   = D3DXVECTOR3(m_heightMap[index2].nx, m_heightMap[index2].ny, m_heightMap[index2].nz);
+			indices[index]             = index;
 			index++;
 		}
 	}
 
 	// Set up the description of the static vertex buffer.
-    vertexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    vertexBufferDesc.ByteWidth = sizeof(VertexType) * m_vertexCount;
-    vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-    vertexBufferDesc.CPUAccessFlags = 0;
-    vertexBufferDesc.MiscFlags = 0;
+    vertexBufferDesc.Usage               = D3D11_USAGE_DEFAULT;
+    vertexBufferDesc.ByteWidth           = sizeof(VertexType) * m_vertexCount;
+    vertexBufferDesc.BindFlags           = D3D11_BIND_VERTEX_BUFFER;
+    vertexBufferDesc.CPUAccessFlags      = 0;
+    vertexBufferDesc.MiscFlags           = 0;
 	vertexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the vertex data.
-    vertexData.pSysMem = m_vertices;
-	vertexData.SysMemPitch = 0;
+    vertexData.pSysMem          = m_vertices;
+	vertexData.SysMemPitch      = 0;
 	vertexData.SysMemSlicePitch = 0;
 
 	// Now create the vertex buffer.
@@ -805,16 +805,16 @@ bool TerrainClass::InitializeBuffers(ID3D11Device* device)
 	}
 
 	// Set up the description of the static index buffer.
-    indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-    indexBufferDesc.ByteWidth = sizeof(unsigned long) * m_indexCount;
-    indexBufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-    indexBufferDesc.CPUAccessFlags = 0;
-    indexBufferDesc.MiscFlags = 0;
+    indexBufferDesc.Usage               = D3D11_USAGE_DEFAULT;
+    indexBufferDesc.ByteWidth           = sizeof(unsigned long) * m_indexCount;
+    indexBufferDesc.BindFlags           = D3D11_BIND_INDEX_BUFFER;
+    indexBufferDesc.CPUAccessFlags      = 0;
+    indexBufferDesc.MiscFlags           = 0;
 	indexBufferDesc.StructureByteStride = 0;
 
 	// Give the subresource structure a pointer to the index data.
-    indexData.pSysMem = indices;
-	indexData.SysMemPitch = 0;
+    indexData.pSysMem          = indices;
+	indexData.SysMemPitch      = 0;
 	indexData.SysMemSlicePitch = 0;
 
 	// Create the index buffer.

@@ -9,6 +9,8 @@
 // INCLUDES //
 //////////////
 #include <math.h>
+#include <time.h>
+#include <stdlib.h>
 
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -22,10 +24,14 @@ public:
 	~PositionClass();
 
 	void SetPosition(float, float, float);
+	void SetCoinPosition(float, float, float);
 	void SetRotation(float, float, float);
 
 	void GetPosition(float&, float&, float&);
+	void GetCoinPosition(float&, float&, float&);
 	void GetRotation(float&, float&, float&);
+	bool CheckPosition();
+	void RandomCoinPosition();
 
 	void SetFrameTime(float);
 
@@ -40,7 +46,9 @@ public:
 
 private:
 	float m_positionX, m_positionY, m_positionZ;
+	float m_coinPositionX, m_coinPositionY, m_coinPositionZ;
 	float m_rotationX, m_rotationY, m_rotationZ;
+	float offset;
 
 	float m_frameTime;
 

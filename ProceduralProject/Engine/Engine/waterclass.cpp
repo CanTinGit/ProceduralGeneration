@@ -45,9 +45,7 @@ bool WaterClass::Initialize(ID3D11Device* device, WCHAR* textureFilename, float 
 	// Set the tiling for the water normal maps.
 	m_normalMapTiling.x = 0.01f;  // Tile ten times over the quad.
 	m_normalMapTiling.y = 0.02f;  // Tile five times over the quad.
-
-								  // Initialize the water translation to zero.
-	m_waterTranslation = 0.0f;
+	m_waterTranslation = 0.0f;	 // Initialize the water translation to zero.	
 
 	// Set the scaling value for the water normal map.
 	m_reflectRefractScale = 0.03f;

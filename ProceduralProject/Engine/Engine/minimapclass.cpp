@@ -8,6 +8,7 @@ MiniMapClass::MiniMapClass()
 	m_MiniMapBitmap = 0;
 	m_Border = 0;
 	m_Point = 0;
+	m_CoinPoint = 0;
 }
 
 
@@ -86,11 +87,34 @@ bool MiniMapClass::Initialize(ID3D11Device* device, HWND hwnd, int screenWidth, 
 		return false;
 	}
 
+	// Create the point bitmap object.
+	m_CoinPoint = new BitmapClass;
+	if (!m_Point)
+	{
+		return false;
+	}
+
+	// Initialize the coin point bitmap object.
+	result = m_CoinPoint->Initialize(device, hwnd, screenWidth, screenHeight, L"../Engine/data/point02.dds", 3, 3);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the coin point object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 }
 
 void MiniMapClass::Shutdown()
 {
+	// Release the coin point bitmap object.
+	if (m_CoinPoint)
+	{
+		m_CoinPoint->Shutdown();
+		delete m_CoinPoint;
+		m_CoinPoint = 0;
+	}
+
 	// Release the point bitmap object.
 	if (m_Point)
 	{
@@ -152,6 +176,16 @@ bool MiniMapClass::Render(ID3D11DeviceContext* deviceContext, D3DXMATRIX worldMa
 	// Render the point bitmap using the texture shader.
 	textureShader->Render(deviceContext, m_Point->GetIndexCount(), worldMatrix, m_viewMatrix, orthoMatrix, m_Point->GetTexture());
 
+	// Put the point bitmap vertex and index buffers on the graphics pipeline to prepare them for drawing.
+	result = m_Point->Render(deviceContext, m_coinPointLocationX, m_coinPointLocationY);
+	if (!result)
+	{
+		return false;
+	}
+
+	// Render the point bitmap using the texture shader.
+	textureShader->Render(deviceContext, m_CoinPoint->GetIndexCount(), worldMatrix, m_viewMatrix, orthoMatrix, m_CoinPoint->GetTexture());
+
 	return true;
 }
 
@@ -192,6 +226,47 @@ void MiniMapClass::PositionUpdate(float positionX, float positionZ)
 	// Subtract one from the location to center the point on the mini-map according to the 3x3 point pixel image size.
 	m_pointLocationX = m_pointLocationX - 1;
 	m_pointLocationY = m_pointLocationY - 1;
+
+	return;
+}
+
+void MiniMapClass::CoinPositionUpdate(float positionX, float positionZ)
+{
+	float percentX, percentY;
+
+
+	// Ensure the point does not leave the minimap borders even if the camera goes past the terrain borders.
+	if (positionX < 0)
+	{
+		positionX = 0;
+	}
+
+	if (positionZ < 0)
+	{
+		positionZ = 0;
+	}
+
+	if (positionX > m_terrainWidth)
+	{
+		positionX = m_terrainWidth;
+	}
+
+	if (positionZ > m_terrainHeight)
+	{
+		positionZ = m_terrainHeight;
+	}
+
+	// Calculate the position of the camera on the minimap in terms of percentage.
+	percentX = positionX / m_terrainWidth;
+	percentY = 1.0f - (positionZ / m_terrainHeight);
+
+	// Determine the pixel location of the coin point on the mini-map.
+	m_coinPointLocationX = m_mapLocationX + (int)(percentX * m_mapSizeX);
+	m_coinPointLocationY = m_mapLocationY + (int)(percentY * m_mapSizeY);
+
+	// Subtract one from the location to center the point on the mini-map according to the 3x3 point pixel image size.
+	m_coinPointLocationX = m_coinPointLocationX - 1;
+	m_coinPointLocationY = m_coinPointLocationY - 1;
 
 	return;
 }

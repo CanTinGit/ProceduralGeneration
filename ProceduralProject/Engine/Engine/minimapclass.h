@@ -27,12 +27,13 @@ public:
 	bool Render(ID3D11DeviceContext*, D3DXMATRIX, D3DXMATRIX, TextureShaderClass*);
 
 	void PositionUpdate(float, float);
+	void CoinPositionUpdate(float, float);
 
 private:
-	int m_mapLocationX, m_mapLocationY, m_pointLocationX, m_pointLocationY;
+	int m_mapLocationX, m_mapLocationY, m_pointLocationX, m_pointLocationY, m_coinPointLocationX, m_coinPointLocationY;
 	float m_mapSizeX, m_mapSizeY, m_terrainWidth, m_terrainHeight;
 	D3DXMATRIX m_viewMatrix;
-	BitmapClass *m_MiniMapBitmap, *m_Border, *m_Point;
+	BitmapClass *m_MiniMapBitmap, *m_Border, *m_Point, *m_CoinPoint;
 };
 
 #endif

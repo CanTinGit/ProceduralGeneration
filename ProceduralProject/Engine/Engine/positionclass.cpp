@@ -9,6 +9,10 @@ PositionClass::PositionClass()
 	m_positionX = 0.0f;
 	m_positionY = 0.0f;
 	m_positionZ = 0.0f;
+
+	m_coinPositionX = 0.0f;
+	m_coinPositionY = 0.0f;
+	m_coinPositionZ = 0.0f;
 	
 	m_rotationX = 0.0f;
 	m_rotationY = 0.0f;
@@ -24,6 +28,8 @@ PositionClass::PositionClass()
 	m_rightTurnSpeed = 0.0f;
 	m_lookUpSpeed    = 0.0f;
 	m_lookDownSpeed  = 0.0f;
+
+	offset = 1.0f;
 }
 
 
@@ -45,6 +51,15 @@ void PositionClass::SetPosition(float x, float y, float z)
 	return;
 }
 
+void PositionClass::SetCoinPosition(float x, float y, float z)
+{
+	m_coinPositionX = x;
+	m_coinPositionY = y;
+	m_coinPositionZ = z;
+	return;
+}
+
+
 
 void PositionClass::SetRotation(float x, float y, float z)
 {
@@ -60,6 +75,14 @@ void PositionClass::GetPosition(float& x, float& y, float& z)
 	x = m_positionX;
 	y = m_positionY;
 	z = m_positionZ;
+	return;
+}
+
+void PositionClass::GetCoinPosition(float& x, float& y, float& z)
+{
+	x = m_coinPositionX;
+	y = m_coinPositionY;
+	z = m_coinPositionZ;
 	return;
 }
 
@@ -347,4 +370,26 @@ void PositionClass::LookDownward(bool keydown)
 	}
 
 	return;
+}
+
+bool PositionClass::CheckPosition() 
+{
+	if (m_positionX < m_coinPositionX + offset && m_positionX > m_coinPositionX - offset)
+	{
+		if (m_positionZ < m_coinPositionZ + offset && m_positionZ > m_coinPositionZ - offset)
+		{
+			RandomCoinPosition();
+		}
+		
+	}
+
+	return false;
+}
+
+void PositionClass::RandomCoinPosition()
+{
+	srand(time(0));
+	m_coinPositionX = rand() % 255 + 1;
+	srand(m_coinPositionX);
+	m_coinPositionZ = rand() % 255 + 1;
 }

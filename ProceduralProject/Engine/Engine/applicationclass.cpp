@@ -68,8 +68,8 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	char videoCard[128];
 	int videoMemory;
 	int downSampleWidth, downSampleHeight;
-	downSampleWidth = screenWidth / 2;
-	downSampleHeight = screenHeight / 2;
+	downSampleWidth = screenWidth /2 ;
+	downSampleHeight = screenHeight /2 ;
 	int terrainWidth, terrainHeight;
 
 	
@@ -130,7 +130,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 	
 	// Initialize the model object
-	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/stone01.dds");
+	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/coin.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -178,6 +178,9 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 	// Set the initial position of the viewer to the same as the initial camera position.
 	m_Position->SetPosition(cameraX, cameraY, cameraZ);
+
+	// Set the initial position of the coin.
+	m_Position->RandomCoinPosition();
 
 	// Create the fps object.
 	m_Fps = new FpsClass;
@@ -329,27 +332,27 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 
-	//// Create the frustum object.
-	//m_Frustum = new FrustumClass;
-	//if (!m_Frustum)
-	//{
-	//	return false;
-	//}
+	// Create the frustum object.
+	m_Frustum = new FrustumClass;
+	if (!m_Frustum)
+	{
+		return false;
+	}
 
-	//// Create the quad tree object.
-	//m_QuadTree = new QuadTreeClass;
-	//if (!m_QuadTree)
-	//{
-	//	return false;
-	//}
+	// Create the quad tree object.
+	m_QuadTree = new QuadTreeClass;
+	if (!m_QuadTree)
+	{
+		return false;
+	}
 
-	//// Initialize the quad tree object.
-	//result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
-	//if (!result)
-	//{
-	//	MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
-	//	return false;
-	//}
+	// Initialize the quad tree object.
+	result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the quad tree object.", L"Error", MB_OK);
+		return false;
+	}
 
 	// Create the depth shader object.
 	m_DepthShader = new DepthShaderClass;
@@ -609,8 +612,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		MessageBox(hwnd, L"Could not initialize the water shader object.", L"Error", MB_OK);
 		return false;
 	}
-
-
 
 	return true;
 
@@ -909,7 +910,10 @@ void ApplicationClass::Shutdown()
 
 bool ApplicationClass::Frame()
 {
-	bool result;
+	bool result, foundHeight;
+	D3DXVECTOR3 position;
+	float height;
+
 
 
 	// Read the user input.
@@ -966,6 +970,17 @@ bool ApplicationClass::Frame()
 	// Render the reflection of the scene to a texture.
 	RenderReflectionToTexture();
 
+	// Get the current position of the camera.
+	position = m_Camera->GetPosition();
+
+	// Get the height of the triangle that is directly underneath the given camera position.
+	foundHeight = m_QuadTree->GetHeightAtPosition(position.x, position.z, height);
+	if (foundHeight)
+	{
+		// If there was a triangle under the camera then position the camera just above it by two units.
+		m_Camera->SetPosition(position.x, height + 2.0f, position.z);
+	}
+
 	// Render the graphics.
 	result = RenderGraphics();
 	if(!result)
@@ -980,6 +995,7 @@ bool ApplicationClass::Frame()
 bool ApplicationClass::HandleInput(float frameTime)
 {
 	bool keyDown, result;
+	float coinPosX, coinPosY, coinPosZ;
 	float posX, posY, posZ, rotX, rotY, rotZ;
 
 
@@ -988,7 +1004,15 @@ bool ApplicationClass::HandleInput(float frameTime)
 
 	// Handle the input.
 	keyDown = m_Input->IsSpacePressed();
-	m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);	
+	if (keyDown)
+	{
+		result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
+		if (!result)
+		{
+			return false;
+		}
+	}
+	m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);
 
 	keyDown = m_Input->IsLeftPressed();
 	m_Position->TurnLeft(keyDown);
@@ -1018,6 +1042,9 @@ bool ApplicationClass::HandleInput(float frameTime)
 	m_Position->GetPosition(posX, posY, posZ);
 	m_Position->GetRotation(rotX, rotY, rotZ);
 
+	// Get the coin point position
+	m_Position->GetCoinPosition(coinPosX, coinPosY, coinPosZ);
+
 	// Set the position of the camera.
 	m_Camera->SetPosition(posX, posY, posZ);
 	m_Camera->SetRotation(rotX, rotY, rotZ);
@@ -1036,8 +1063,15 @@ bool ApplicationClass::HandleInput(float frameTime)
 		return false;
 	}
 
+	// Check the collision between viewer and coin
+	result = m_Position->CheckPosition();
+
 	// Update the location of the camera on the mini map.
 	m_MiniMap->PositionUpdate(posX, posZ);
+
+	// Update the location of the coin on the mini map.
+	m_MiniMap->CoinPositionUpdate(coinPosX, coinPosZ);
+
 
 	return true;
 }
@@ -1097,7 +1131,12 @@ bool ApplicationClass::Render()
 	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, baseViewMatrix,reflectionViewMatrix;
 	D3DXVECTOR3 cameraPosition;
 	bool result;
-
+	float coinPosX, coinPosY, coinPosZ;
+	bool foundHeight;
+	 
+	// Get the coin's position and the position height of the terrain
+	m_Position->GetCoinPosition(coinPosX, coinPosY, coinPosZ);
+	foundHeight = m_QuadTree->GetHeightAtPosition(coinPosX, coinPosZ, coinPosY);
 
 	// Clear the scene.
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1152,27 +1191,60 @@ bool ApplicationClass::Render()
 	// Reset the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	D3DXMATRIX scale;
+	D3DXMATRIX translation;
+
+	// Translate the sky dome to be centered around the camera position.
+	D3DXMatrixTranslation(&worldMatrix, 1, 1, 1);
+	//D3DXMatrixScaling(&scale, 0.5f, 0.5f, 0.5f);
+	//worldMatrix = translation * scale;
+
 	//Put the model vertex and index buffers on the graphics pipeline to prepare them for drawing.
 	m_model->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
 	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_RenderTexture->GetShaderResourceView());
+		m_UpSampleTexure->GetShaderResourceView());
 
-	// Render the terrain buffers.
-	m_Terrain->Render(m_Direct3D->GetDeviceContext());
+	// Reset the world matrix.
+	m_Direct3D->GetWorldMatrix(worldMatrix);
 
+	// Construct the frustum.
+	m_Frustum->ConstructFrustum(SCREEN_DEPTH, projectionMatrix, viewMatrix);
+	
 	// Render the terrain using the terrain shader.
-	result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
+	result = m_TerrainShader->SetShaderParameters(m_Direct3D->GetDeviceContext(), worldMatrix, viewMatrix, projectionMatrix, m_Light->GetAmbientColor(),
+		m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
 		m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
 	if (!result)
 	{
 		return false;
 	}
+	
+	// Render the terrain using the quad tree and terrain shader.
+	m_QuadTree->Render(m_Frustum, m_Direct3D->GetDeviceContext(), m_TerrainShader);
+	
+	// Set the number of rendered terrain triangles since some were culled.
+	result = m_Text->SetRenderCount(m_QuadTree->GetDrawCount(), m_Direct3D->GetDeviceContext());
+	if (!result)
+	{
+		return false;
+	}
+
+	//// Render the terrain buffers.
+	//m_Terrain->Render(m_Direct3D->GetDeviceContext());
+
+	// Render the terrain using the terrain shader.
+	//result = m_TerrainShader->Render(m_Direct3D->GetDeviceContext(), m_Terrain->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
+	//	m_Light->GetAmbientColor(), m_Light->GetDiffuseColor(), m_Light->GetDirection(), m_Terrain->GetDetailMapTexture(), m_Terrain->GetGrassTexture(),
+	//	m_Terrain->GetSlopeTexture(), m_Terrain->GetRockTexture());
+	//if (!result)
+	//{
+	//	return false;
+	//}
 
 	// Translate to the location of the water and render it.
-	D3DXMatrixTranslation(&worldMatrix, 240.0f, m_Water->GetWaterHeight(), 250.0f);
+	D3DXMatrixTranslation(&worldMatrix, 128.0f, m_Water->GetWaterHeight(), 128.0f);
 	m_Water->Render(m_Direct3D->GetDeviceContext());
 	m_WaterShader->Render(m_Direct3D->GetDeviceContext(), m_Water->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix, reflectionViewMatrix,
 		m_RefractionTexture->GetShaderResourceView(), m_ReflectionTexture->GetShaderResourceView(), m_Water->GetTexture(),
@@ -1651,6 +1723,8 @@ void ApplicationClass::RenderReflectionToTexture()
 
 	return;
 }
+
+
 
 
 
