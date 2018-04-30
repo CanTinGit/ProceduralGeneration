@@ -29,13 +29,11 @@ const float SCREEN_NEAR = 0.1f;
 #include "textclass.h"
 #include "terrainshaderclass.h"
 #include "lightclass.h"
-#include "multitextureshaderclass.h"
 #include "modelclass.h"
 #include "skydomeclass.h"
 #include "skydomeshaderclass.h"
 #include "frustumclass.h"
 #include "quadtreeclass.h"
-#include "depthshaderclass.h"
 #include "textureshaderclass.h"
 #include "horizontalblurshaderclass.h"
 #include "verticalblurshaderclass.h"
@@ -98,7 +96,6 @@ private:
 
 	FrustumClass* m_Frustum;
 	QuadTreeClass* m_QuadTree;
-	DepthShaderClass* m_DepthShader;
 	TextureShaderClass *m_TextureShader;
 
 	HorizontalBlurShaderClass* m_HorizontalBlurShader;

@@ -25,8 +25,6 @@ ApplicationClass::ApplicationClass()
 	m_Frustum = 0;
 	m_QuadTree = 0;
 
-	m_DepthShader = 0;
-
 	m_HorizontalBlurShader = 0;
 	m_VerticalBlurShader = 0;
 	m_RenderTexture = 0;
@@ -355,19 +353,19 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Create the depth shader object.
-	m_DepthShader = new DepthShaderClass;
-	if (!m_DepthShader)
-	{
-		return false;
-	}
+	//m_DepthShader = new DepthShaderClass;
+	//if (!m_DepthShader)
+	//{
+	//	return false;
+	//}
 
 	// Initialize the depth shader object.
-	result = m_DepthShader->Initialize(m_Direct3D->GetDevice(), hwnd);
-	if (!result)
-	{
-		MessageBox(hwnd, L"Could not initialize the depth shader object.", L"Error", MB_OK);
-		return false;
-	}
+	//result = m_DepthShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	//if (!result)
+	//{
+	//	MessageBox(hwnd, L"Could not initialize the depth shader object.", L"Error", MB_OK);
+	//	return false;
+	//}
 
 	// Create the horizontal blur shader object.
 	m_HorizontalBlurShader = new HorizontalBlurShaderClass;
@@ -748,13 +746,13 @@ void ApplicationClass::Shutdown()
 		m_HorizontalBlurShader = 0;
 	}
 
-	// Release the depth shader object.
-	if (m_DepthShader)
-	{
-		m_DepthShader->Shutdown();
-		delete m_DepthShader;
-		m_DepthShader = 0;
-	}
+	//// Release the depth shader object.
+	//if (m_DepthShader)
+	//{
+	//	m_DepthShader->Shutdown();
+	//	delete m_DepthShader;
+	//	m_DepthShader = 0;
+	//}
 
 	// Release the quad tree object.
 	if (m_QuadTree)
@@ -1142,7 +1140,7 @@ bool ApplicationClass::Render()
 	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the world, view, projection, and ortho matrices from the camera and Direct3D objects.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
@@ -1381,7 +1379,7 @@ bool ApplicationClass::DownSampleTexture()
 	m_DownSampleTexure->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 1.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
@@ -1433,7 +1431,7 @@ bool ApplicationClass::RenderHorizontalBlurToTexture()
 	m_HorizontalBlurTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
@@ -1485,7 +1483,7 @@ bool ApplicationClass::RenderVerticalBlurToTexture()
 	m_VerticalBlurTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
@@ -1533,7 +1531,7 @@ bool ApplicationClass::UpSampleTexture()
 	m_UpSampleTexure->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the world and view matrices from the camera and d3d objects.
 	m_Camera->GetViewMatrix(viewMatrix);
@@ -1624,7 +1622,7 @@ void ApplicationClass::RenderRefractionToTexture()
 	m_RefractionTexture->ClearRenderTarget(m_Direct3D->GetDeviceContext(), 0.0f, 0.0f, 0.0f, 1.0f);
 
 	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
+	//m_Camera->Render();
 
 	// Get the matrices from the camera and d3d objects.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
