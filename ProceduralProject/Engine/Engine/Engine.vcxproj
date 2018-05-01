@@ -107,6 +107,7 @@
     <ClCompile Include="skydomeshaderclass.cpp" />
     <ClCompile Include="skyplaneclass.cpp" />
     <ClCompile Include="skyplaneshaderclass.cpp" />
+    <ClCompile Include="soundclass.cpp" />
     <ClCompile Include="systemclass.cpp" />
     <ClCompile Include="terrainclass.cpp" />
     <ClCompile Include="terrainshaderclass.cpp" />
@@ -146,6 +147,7 @@
     <ClInclude Include="skydomeshaderclass.h" />
     <ClInclude Include="skyplaneclass.h" />
     <ClInclude Include="skyplaneshaderclass.h" />
+    <ClInclude Include="soundclass.h" />
     <ClInclude Include="systemclass.h" />
     <ClInclude Include="terrainclass.h" />
     <ClInclude Include="terrainshaderclass.h" />

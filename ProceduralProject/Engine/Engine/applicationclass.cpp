@@ -6,45 +6,54 @@
 
 ApplicationClass::ApplicationClass()
 {
-	m_Input = 0;
-	m_Direct3D = 0;
-	m_Camera = 0;
-	m_Terrain = 0;
-	m_Timer = 0;
-	m_Position = 0;
-	m_Fps = 0;
-	m_Cpu = 0;
-	m_FontShader = 0;
-	m_Text = 0;
-	m_TerrainShader = 0;
-	m_Light = 0;
-	m_model = 0;
-	m_SkyDome = 0;
-	m_SkyDomeShader = 0;
+	m_Input                 = 0;
+	m_Direct3D              = 0;
+	m_Camera                = 0;
+	m_Terrain               = 0;
+	m_Timer                 = 0;
+	m_Position              = 0;
+	m_Fps                   = 0;
+	m_Cpu                   = 0;
+	m_FontShader            = 0;
+	m_Text                  = 0;
+	m_TerrainShader         = 0;
+	m_Light                 = 0;
+	m_model                 = 0;
+	m_SkyDome               = 0;
+	m_SkyDomeShader         = 0;
 
-	m_Frustum = 0;
-	m_QuadTree = 0;
+	m_Frustum               = 0;
+	m_QuadTree              = 0;
 
-	m_HorizontalBlurShader = 0;
-	m_VerticalBlurShader = 0;
-	m_RenderTexture = 0;
-	m_DownSampleTexure = 0;
+	m_HorizontalBlurShader  = 0;
+	m_VerticalBlurShader    = 0;
+	m_RenderTexture         = 0;
+	m_DownSampleTexure      = 0;
 	m_HorizontalBlurTexture = 0;
-	m_VerticalBlurTexture = 0;
-	m_UpSampleTexure = 0;
-	m_SmallWindow = 0;
-	m_FullScreenWindow = 0;
-	m_TextureShader = 0;
+	m_VerticalBlurTexture   = 0;
+	m_UpSampleTexure        = 0;
+	m_SmallWindow           = 0;
+	m_FullScreenWindow      = 0;
+	m_TextureShader         = 0;
 
-	m_SkyPlane = 0;
-	m_SkyPlaneShader = 0;
-	m_MiniMap = 0;
+	m_SkyPlane              = 0;
+	m_SkyPlaneShader        = 0;
+	m_MiniMap               = 0;
 
-	m_RefractionTexture = 0;
-	m_ReflectionTexture = 0;
-	m_ReflectionShader = 0;
-	m_Water = 0;
-	m_WaterShader = 0;
+	m_RefractionTexture     = 0;
+	m_ReflectionTexture     = 0;
+	m_ReflectionShader      = 0;
+	m_Water                 = 0;
+	m_WaterShader           = 0;
+
+	m_backgroundSound       = 0;
+	m_coinSound             = 0;
+
+	m_OpeningUI             = 0;
+	m_EndUI                 = 0;
+
+	isOpen                  = true;
+	isEnd                   = false;
 }
 
 
@@ -611,6 +620,67 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 		return false;
 	}
 
+	// Create the background sound object.
+	m_backgroundSound = new SoundClass;
+	if (!m_backgroundSound)
+	{
+		return false;
+	}
+
+	// Initialize the background sound object.
+	result = m_backgroundSound->Initialize(hwnd, "../Engine/data/MoodyLoop.wav",true);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the background sound object.", L"Error", MB_OK);
+		return false;
+	}
+
+
+	// Create the coin sound object.
+	m_coinSound = new SoundClass;
+	if (!m_coinSound)
+	{
+		return false;
+	}
+
+	// Initialize the coin sound object.
+	result = m_coinSound->Initialize(hwnd, "../Engine/data/MoodyLoop.wav",false);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the coin sound object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the opening UI object
+	m_OpeningUI = new BitmapClass;
+	if (!m_OpeningUI)
+	{
+		return false;
+	}
+
+	// Initialize the opening UI object
+	result = m_OpeningUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/colorm01.dds", screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the opening UI object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the end UI object
+	m_EndUI = new BitmapClass;
+	if (!m_EndUI)
+	{
+		return false;
+	}
+
+	// Initialize the end UI object
+	result = m_EndUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/colorm01.dds", screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the end UI object.", L"Error", MB_OK);
+		return false;
+	}
+
 	return true;
 
 }
@@ -618,6 +688,38 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 void ApplicationClass::Shutdown()
 {
+	// Release the end UI object.
+	if (m_EndUI)
+	{
+		m_EndUI->Shutdown();
+		delete m_EndUI;
+		m_EndUI = 0;
+	}
+
+	// Release the opening UI object.
+	if (m_OpeningUI)
+	{
+		m_OpeningUI->Shutdown();
+		delete m_OpeningUI;
+		m_OpeningUI = 0;
+	}
+
+	// Release the coin sound object.
+	if (m_coinSound)
+	{
+		m_coinSound->Shutdown();
+		delete m_coinSound;
+		m_coinSound = 0;
+	}
+
+	// Release the background sound object.
+	if (m_backgroundSound)
+	{
+		m_backgroundSound->Shutdown();
+		delete m_backgroundSound;
+		m_backgroundSound = 0;
+	}
+
 	// Release the water shader object.
 	if (m_WaterShader)
 	{
@@ -912,8 +1014,6 @@ bool ApplicationClass::Frame()
 	D3DXVECTOR3 position;
 	float height;
 
-
-
 	// Read the user input.
 	result = m_Input->Frame();
 	if(!result)
@@ -1004,13 +1104,14 @@ bool ApplicationClass::HandleInput(float frameTime)
 	keyDown = m_Input->IsSpacePressed();
 	if (keyDown)
 	{
+		m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);
 		result = m_QuadTree->Initialize(m_Terrain, m_Direct3D->GetDevice());
 		if (!result)
 		{
 			return false;
 		}
+		isOpen = false;
 	}
-	m_Terrain->GenerateHeightMap(m_Direct3D->GetDevice(), keyDown);
 
 	keyDown = m_Input->IsLeftPressed();
 	m_Position->TurnLeft(keyDown);
@@ -1079,48 +1180,70 @@ bool ApplicationClass::RenderGraphics()
 {
 	bool result;
 
-	// First render the scene to a render texture.
-	result = RenderSceneToTexture();
-	if (!result)
+	if (isOpen)
 	{
-		return false;
+		result = RenderOpenAndEndScene();
+		if (!result)
+		{
+			return false;
+		}
+	}
+	
+	else if (isEnd) 
+	{
+		result = RenderOpenAndEndScene();
+		if (!result)
+		{
+			return false;
+		}
 	}
 
-	// Next down sample the render texture to a smaller sized texture.
-	result = DownSampleTexture();
-	if (!result)
+	else
 	{
-		return false;
-	}
+		// First render the scene to a render texture.
+		result = RenderSceneToTexture();
+		if (!result)
+		{
+			return false;
+		}
 
-	// Perform a horizontal blur on the down sampled render texture.
-	result = RenderHorizontalBlurToTexture();
-	if (!result)
-	{
-		return false;
-	}
+		// Next down sample the render texture to a smaller sized texture.
+		result = DownSampleTexture();
+		if (!result)
+		{
+			return false;
+		}
 
-	// Now perform a vertical blur on the horizontal blur render texture.
-	result = RenderVerticalBlurToTexture();
-	if (!result)
-	{
-		return false;
-	}
+		// Perform a horizontal blur on the down sampled render texture.
+		result = RenderHorizontalBlurToTexture();
+		if (!result)
+		{
+			return false;
+		}
 
-	// Up sample the final blurred render texture to screen size again.
-	result = UpSampleTexture();
-	if (!result)
-	{
-		return false;
-	}
+		// Now perform a vertical blur on the horizontal blur render texture.
+		result = RenderVerticalBlurToTexture();
+		if (!result)
+		{
+			return false;
+		}
 
-	// Render the whole scene
-	result = Render();
-	if (!result)
-	{
-		return false;
-	}
+		// Up sample the final blurred render texture to screen size again.
+		result = UpSampleTexture();
+		if (!result)
+		{
+			return false;
+		}
 
+		// Render the whole scene
+		result = Render();
+		if (!result)
+		{
+			return false;
+		}
+
+	}
+	
 	return true;
 }
 
@@ -1722,7 +1845,68 @@ void ApplicationClass::RenderReflectionToTexture()
 	return;
 }
 
+bool ApplicationClass::RenderOpenAndEndScene()
+{
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix;
+	bool result;
 
+
+	// Clear the buffers to begin the scene.
+	m_Direct3D->BeginScene(0.0f, 0.0f, 0.0f, 1.0f);
+
+	// Generate the view matrix based on the camera's position.
+	m_Camera->Render();
+
+	// Get the world, view, projection, and ortho matrices from the camera and d3d objects.
+	m_Camera->GetViewMatrix(viewMatrix);
+	m_Direct3D->GetWorldMatrix(worldMatrix);
+	m_Direct3D->GetProjectionMatrix(projectionMatrix);
+	m_Direct3D->GetOrthoMatrix(orthoMatrix);
+
+	// Turn off the Z buffer to begin all 2D rendering.
+	m_Direct3D->TurnZBufferOff();
+
+	// if isopen is true, render the opening Scene
+	if (isOpen)
+	{
+		result = m_OpeningUI->Render(m_Direct3D->GetDeviceContext(), 10, 10);
+		if (!result)
+		{
+			return false;
+		}
+
+		// Render the bitmap with the texture shader.
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_OpeningUI->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_OpeningUI->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+	}
+
+	if (isEnd)
+	{
+		result = m_EndUI->Render(m_Direct3D->GetDeviceContext(), 10, 10);
+		if (!result)
+		{
+			return false;
+		}
+
+		// Render the bitmap with the texture shader.
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_EndUI->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_EndUI->GetTexture());
+		if (!result)
+		{
+			return false;
+		}
+	}
+
+	// Turn the Z buffer back on now that all 2D rendering has completed.
+	m_Direct3D->TurnZBufferOn();
+
+	// Present the rendered scene to the screen.
+	m_Direct3D->EndScene();
+
+	return true;
+}
 
 
 
@@ -1755,3 +1939,4 @@ void ApplicationClass::RenderReflectionToTexture()
 //{
 //	return false;
 //}
+

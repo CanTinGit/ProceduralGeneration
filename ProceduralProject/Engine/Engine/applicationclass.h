@@ -45,6 +45,8 @@ const float SCREEN_NEAR = 0.1f;
 #include "reflectionshaderclass.h"
 #include "waterclass.h"
 #include "watershaderclass.h"
+#include "soundclass.h"
+#include "bitmapclass.h"
 
 
 
@@ -74,6 +76,7 @@ private:
 	bool Render();
 	void RenderRefractionToTexture();
 	void RenderReflectionToTexture();
+	bool RenderOpenAndEndScene();
 
 private:
 	InputClass* m_Input;
@@ -109,6 +112,10 @@ private:
 	WaterClass* m_Water;
 	WaterShaderClass* m_WaterShader;
 
+	SoundClass *m_backgroundSound, *m_coinSound;
+
+	BitmapClass *m_OpeningUI, *m_EndUI;
+	bool isOpen, isEnd;
 };
 
 #endif
