@@ -51,9 +51,14 @@ ApplicationClass::ApplicationClass()
 
 	m_OpeningUI             = 0;
 	m_EndUI                 = 0;
+	m_greyScreen            = 0;
 
 	isOpen                  = true;
 	isEnd                   = false;
+	isblur                  = false;
+	isgrey                  = false;
+	m_greyShader            = 0;
+	coinCounter             = 0;
 }
 
 
@@ -71,7 +76,6 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 {
 	bool result;
 	float cameraX, cameraY, cameraZ;
-	D3DXMATRIX baseViewMatrix;
 	char videoCard[128];
 	int videoMemory;
 	int downSampleWidth, downSampleHeight;
@@ -123,9 +127,9 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	m_Camera->GetViewMatrix(baseViewMatrix);
 
 	// Set the initial position of the camera.
-	cameraX = 50.0f;
-	cameraY = 2.0f;
-	cameraZ = -7.0f;
+	cameraX = 0.0f;
+	cameraY = 0.0f;
+	cameraZ = -1.0f;
 
 	m_Camera->SetPosition(cameraX, cameraY, cameraZ);
 
@@ -137,7 +141,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 	
 	// Initialize the model object
-	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/cube.txt", L"../Engine/data/coin.dds");
+	result = m_model->Initialize(m_Direct3D->GetDevice(), "../Engine/data/model.txt", L"../Engine/data/coin.dds");
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the model object.", L"Error", MB_OK);
@@ -659,7 +663,7 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialize the opening UI object
-	result = m_OpeningUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/colorm01.dds", screenWidth, screenHeight);
+	result = m_OpeningUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/start.dds", screenWidth, screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the opening UI object.", L"Error", MB_OK);
@@ -674,10 +678,39 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 	}
 
 	// Initialize the end UI object
-	result = m_EndUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/colorm01.dds", screenWidth, screenHeight);
+	result = m_EndUI->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/win.dds", screenWidth, screenHeight);
 	if (!result)
 	{
 		MessageBox(hwnd, L"Could not initialize the end UI object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create the end UI object
+	m_greyScreen = new BitmapClass;
+	if (!m_greyScreen)
+	{
+		return false;
+	}
+
+	// Initialize the end UI object
+	result = m_greyScreen->Initialize(m_Direct3D->GetDevice(), hwnd, screenWidth, screenHeight, L"../Engine/data/win.dds", screenWidth, screenHeight);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the end UI object.", L"Error", MB_OK);
+		return false;
+	}
+
+	// Create grey shader object
+	m_greyShader = new GreyShaderClass;
+	if (!m_greyShader)
+	{
+		return false;
+	}
+
+	result = m_greyShader->Initialize(m_Direct3D->GetDevice(), hwnd);
+	if (!result)
+	{
+		MessageBox(hwnd, L"Could not initialize the grey shader object.", L"Error", MB_OK);
 		return false;
 	}
 
@@ -688,6 +721,22 @@ bool ApplicationClass::Initialize(HINSTANCE hinstance, HWND hwnd, int screenWidt
 
 void ApplicationClass::Shutdown()
 {
+	// Release the grey shader object
+	if (m_greyShader)
+	{
+		m_greyShader->Shutdown();
+		delete m_greyShader;
+		m_greyShader = 0;
+	}
+
+	// Release the end UI object.
+	if (m_greyScreen)
+	{
+		m_greyScreen->Shutdown();
+		delete m_greyScreen;
+		m_greyScreen = 0;
+	}
+
 	// Release the end UI object.
 	if (m_EndUI)
 	{
@@ -1095,11 +1144,13 @@ bool ApplicationClass::HandleInput(float frameTime)
 	bool keyDown, result;
 	float coinPosX, coinPosY, coinPosZ;
 	float posX, posY, posZ, rotX, rotY, rotZ;
+	int mouX, mouY;
 
 
 	// Set the frame time for calculating the updated position.
 	m_Position->SetFrameTime(frameTime);
 
+	m_Input->GetMouseLocation(mouX, mouY);
 	// Handle the input.
 	keyDown = m_Input->IsSpacePressed();
 	if (keyDown)
@@ -1113,12 +1164,6 @@ bool ApplicationClass::HandleInput(float frameTime)
 		isOpen = false;
 	}
 
-	keyDown = m_Input->IsLeftPressed();
-	m_Position->TurnLeft(keyDown);
-
-	keyDown = m_Input->IsRightPressed();
-	m_Position->TurnRight(keyDown);
-
 	keyDown = m_Input->IsUpPressed();
 	m_Position->MoveForward(keyDown);
 
@@ -1131,12 +1176,34 @@ bool ApplicationClass::HandleInput(float frameTime)
 	keyDown = m_Input->IsZPressed();
 	m_Position->MoveDownward(keyDown);
 
-	keyDown = m_Input->IsPgUpPressed();
-	m_Position->LookUpward(keyDown);
+	keyDown = m_Input->IsBPressed();
+	if (keyDown)
+	{
+		if (isblur)
+		{
+			isblur = false;
+		}
+		else
+		{
+			isblur = true;
+		}
+	}
 
-	keyDown = m_Input->IsPgDownPressed();
-	m_Position->LookDownward(keyDown);
+	keyDown = m_Input->IsGPressed();
+	if (keyDown)
+	{
+		if (isgrey)
+		{
+			isgrey = false;
+		}
+		else
+		{
+			isgrey = true;
+		}
+	}
 	
+	m_Position->Rotate(mouX, mouY);
+
 	// Get the view point position/rotation.
 	m_Position->GetPosition(posX, posY, posZ);
 	m_Position->GetRotation(rotX, rotY, rotZ);
@@ -1145,6 +1212,23 @@ bool ApplicationClass::HandleInput(float frameTime)
 	m_Position->GetCoinPosition(coinPosX, coinPosY, coinPosZ);
 
 	// Set the position of the camera.
+	if (posX < 0)
+	{
+		posX = 0;
+	}
+	if (posX > 255)
+	{
+		posX = 255;
+	}
+	if (posZ < 0)
+	{
+		posZ = 0;
+	}
+	if (posZ > 255)
+	{
+		posZ = 255;
+	}
+
 	m_Camera->SetPosition(posX, posY, posZ);
 	m_Camera->SetRotation(rotX, rotY, rotZ);
 
@@ -1163,7 +1247,11 @@ bool ApplicationClass::HandleInput(float frameTime)
 	}
 
 	// Check the collision between viewer and coin
-	result = m_Position->CheckPosition();
+	result = m_Position->CheckPosition(coinCounter);
+	if (coinCounter >= 3)
+	{
+		isEnd = true;
+	}
 
 	// Update the location of the camera on the mini map.
 	m_MiniMap->PositionUpdate(posX, posZ);
@@ -1249,7 +1337,7 @@ bool ApplicationClass::RenderGraphics()
 
 bool ApplicationClass::Render()
 {
-	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix, baseViewMatrix,reflectionViewMatrix;
+	D3DXMATRIX worldMatrix, viewMatrix, projectionMatrix, orthoMatrix,reflectionViewMatrix;
 	D3DXVECTOR3 cameraPosition;
 	bool result;
 	float coinPosX, coinPosY, coinPosZ;
@@ -1270,7 +1358,7 @@ bool ApplicationClass::Render()
 	m_Camera->GetViewMatrix(viewMatrix);
 	m_Direct3D->GetProjectionMatrix(projectionMatrix);
 	m_Direct3D->GetOrthoMatrix(orthoMatrix);
-	m_Camera->GetBaseViewMatrix(baseViewMatrix);
+	//m_Camera->GetBaseViewMatrix(baseViewMatrix);
 	m_Camera->GetReflectionViewMatrix(reflectionViewMatrix);
 
 	// Get the position of the camera.
@@ -1316,7 +1404,7 @@ bool ApplicationClass::Render()
 	D3DXMATRIX translation;
 
 	// Translate the sky dome to be centered around the camera position.
-	D3DXMatrixTranslation(&worldMatrix, 1, 1, 1);
+	D3DXMatrixTranslation(&worldMatrix, coinPosX, coinPosY, coinPosZ);
 	//D3DXMatrixScaling(&scale, 0.5f, 0.5f, 0.5f);
 	//worldMatrix = translation * scale;
 
@@ -1325,7 +1413,7 @@ bool ApplicationClass::Render()
 
 	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
 	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_model->GetIndexCount(), worldMatrix, viewMatrix, projectionMatrix,
-		m_UpSampleTexure->GetShaderResourceView());
+		m_model->GetTexture());
 
 	// Reset the world matrix.
 	m_Direct3D->GetWorldMatrix(worldMatrix);
@@ -1385,6 +1473,39 @@ bool ApplicationClass::Render()
 		return false;
 	}
 
+	// Check if it is blur state, if it is. Render the blur texture into the bitmap
+	if (isblur)
+	{
+		result = m_OpeningUI->Render(m_Direct3D->GetDeviceContext(), 0, 0);
+		if (!result)
+		{
+			return false;
+		}
+
+		// Render the bitmap with the texture shader.
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_OpeningUI->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_UpSampleTexure->GetShaderResourceView());
+		if (!result)
+		{
+			return false;
+		}
+	}
+
+	if (isgrey)
+	{
+		result = m_OpeningUI->Render(m_Direct3D->GetDeviceContext(), 0, 0);
+		if (!result)
+		{
+			return false;
+		}
+
+		// Render the bitmap with the texture shader.
+		result = m_greyShader->Render(m_Direct3D->GetDeviceContext(), m_greyScreen->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_RenderTexture->GetShaderResourceView());
+		if (!result)
+		{
+			return false;
+		}
+	}
+	
 	// Turn on the alpha blending before rendering the text.
 	m_Direct3D->TurnOnAlphaBlending();
 
@@ -1518,7 +1639,7 @@ bool ApplicationClass::DownSampleTexture()
 	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the small ortho window using the texture shader and the render to texture of the scene as the texture resource.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_RenderTexture->GetShaderResourceView());
 	if (!result)
 	{
@@ -1570,7 +1691,7 @@ bool ApplicationClass::RenderHorizontalBlurToTexture()
 	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the small ortho window using the horizontal blur shader and the down sampled render to texture resource.
-	result = m_HorizontalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+	result = m_HorizontalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_DownSampleTexure->GetShaderResourceView(), screenSizeX);
 	if (!result)
 	{
@@ -1622,7 +1743,7 @@ bool ApplicationClass::RenderVerticalBlurToTexture()
 	m_SmallWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the small ortho window using the vertical blur shader and the horizontal blurred render to texture resource.
-	result = m_VerticalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+	result = m_VerticalBlurShader->Render(m_Direct3D->GetDeviceContext(), m_SmallWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_HorizontalBlurTexture->GetShaderResourceView(), screenSizeY);
 	if (!result)
 	{
@@ -1670,7 +1791,7 @@ bool ApplicationClass::UpSampleTexture()
 	m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
 
 	// Render the full screen ortho window using the texture shader and the small sized final blurred render to texture resource.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
+	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix,
 		m_VerticalBlurTexture->GetShaderResourceView());
 	if (!result)
 	{
@@ -1689,45 +1810,6 @@ bool ApplicationClass::UpSampleTexture()
 	return true;
 }
 
-bool ApplicationClass::Render2DTextureScene()
-{
-	D3DXMATRIX worldMatrix, viewMatrix, orthoMatrix;
-	bool result;
-
-
-	// Clear the buffers to begin the scene.
-	m_Direct3D->BeginScene(1.0f, 0.0f, 0.0f, 0.0f);
-
-	// Generate the view matrix based on the camera's position.
-	m_Camera->Render();
-
-	// Get the world, view, and ortho matrices from the camera and d3d objects.
-	m_Camera->GetViewMatrix(viewMatrix);
-	m_Direct3D->GetWorldMatrix(worldMatrix);
-	m_Direct3D->GetOrthoMatrix(orthoMatrix);
-
-	// Turn off the Z buffer to begin all 2D rendering.
-	m_Direct3D->TurnZBufferOff();
-
-	// Put the full screen ortho window vertex and index buffers on the graphics pipeline to prepare them for drawing.
-	m_FullScreenWindow->Render(m_Direct3D->GetDeviceContext());
-
-	// Render the full screen ortho window using the texture shader and the full screen sized blurred render to texture resource.
-	result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_FullScreenWindow->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix,
-		m_UpSampleTexure->GetShaderResourceView());
-	if (!result)
-	{
-		return false;
-	}
-
-	// Turn the Z buffer back on now that all 2D rendering has completed.
-	m_Direct3D->TurnZBufferOn();
-
-	// Present the rendered scene to the screen.
-	m_Direct3D->EndScene();
-
-	return true;
-}
 
 void ApplicationClass::RenderRefractionToTexture()
 {
@@ -1869,14 +1951,14 @@ bool ApplicationClass::RenderOpenAndEndScene()
 	// if isopen is true, render the opening Scene
 	if (isOpen)
 	{
-		result = m_OpeningUI->Render(m_Direct3D->GetDeviceContext(), 10, 10);
+		result = m_OpeningUI->Render(m_Direct3D->GetDeviceContext(), 0, 0);
 		if (!result)
 		{
 			return false;
 		}
 
 		// Render the bitmap with the texture shader.
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_OpeningUI->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_OpeningUI->GetTexture());
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_OpeningUI->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_OpeningUI->GetTexture());
 		if (!result)
 		{
 			return false;
@@ -1885,14 +1967,14 @@ bool ApplicationClass::RenderOpenAndEndScene()
 
 	if (isEnd)
 	{
-		result = m_EndUI->Render(m_Direct3D->GetDeviceContext(), 10, 10);
+		result = m_EndUI->Render(m_Direct3D->GetDeviceContext(), 0, 0);
 		if (!result)
 		{
 			return false;
 		}
 
 		// Render the bitmap with the texture shader.
-		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_EndUI->GetIndexCount(), worldMatrix, viewMatrix, orthoMatrix, m_EndUI->GetTexture());
+		result = m_TextureShader->Render(m_Direct3D->GetDeviceContext(), m_EndUI->GetIndexCount(), worldMatrix, baseViewMatrix, orthoMatrix, m_EndUI->GetTexture());
 		if (!result)
 		{
 			return false;

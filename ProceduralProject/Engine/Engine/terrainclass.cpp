@@ -193,15 +193,12 @@ bool TerrainClass::GenerateHeightMap(ID3D11Device* device, bool keydown)
 				m_heightMap[index].x = (float)i;
 				m_heightMap[index].z = (float)j;
 				m_heightMap[index].y = raw_noise_2d(i, j) + 0.5f * raw_noise_2d(2*i,2*j) + 0.25* raw_noise_2d(4*i,4*j);
+				if (i < 5 || i > m_terrainWidth - 3 || j < 5 | j > m_terrainHeight - 3 )
+				{
+					m_heightMap[index].y = 0;
+				}
 				if (m_heightMap[index].y > 0.9f)
 				{
-					//float radio = 0;
-					//srand((unsigned)time(0));
-					//radio = rand() / double(RAND_MAX);
-					//if (radio > 0.5f)
-					//{
-					//	m_heightMap[index].y = 
-					//}
 					m_heightMap[index].y = m_heightMap[index].y * 200;
 				}
 				else if (m_heightMap[index].y > 0.8f)

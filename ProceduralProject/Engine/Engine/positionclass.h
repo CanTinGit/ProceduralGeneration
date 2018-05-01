@@ -30,7 +30,7 @@ public:
 	void GetPosition(float&, float&, float&);
 	void GetCoinPosition(float&, float&, float&);
 	void GetRotation(float&, float&, float&);
-	bool CheckPosition();
+	bool CheckPosition(int& );
 	void RandomCoinPosition();
 
 	void SetFrameTime(float);
@@ -43,6 +43,7 @@ public:
 	void TurnRight(bool);
 	void LookUpward(bool);
 	void LookDownward(bool);
+	void Rotate(int, int);
 
 private:
 	float m_positionX, m_positionY, m_positionZ;

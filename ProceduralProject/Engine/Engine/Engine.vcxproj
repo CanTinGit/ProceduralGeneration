@@ -90,6 +90,7 @@
     <ClCompile Include="fontshaderclass.cpp" />
     <ClCompile Include="fpsclass.cpp" />
     <ClCompile Include="frustumclass.cpp" />
+    <ClCompile Include="greyshaderclass.cpp" />
     <ClCompile Include="horizontalblurshaderclass.cpp" />
     <ClCompile Include="inputclass.cpp" />
     <ClCompile Include="lightclass.cpp" />
@@ -131,6 +132,7 @@
     <ClInclude Include="fontshaderclass.h" />
     <ClInclude Include="fpsclass.h" />
     <ClInclude Include="frustumclass.h" />
+    <ClInclude Include="greyshaderclass.h" />
     <ClInclude Include="horizontalblurshaderclass.h" />
     <ClInclude Include="inputclass.h" />
     <ClInclude Include="lightclass.h" />
@@ -165,6 +167,7 @@
     <None Include="depth.vs" />
     <None Include="font.ps" />
     <None Include="font.vs" />
+    <None Include="grey.ps" />
     <None Include="horizontalblur.ps" />
     <None Include="horizontalblur.vs" />
     <None Include="multitexture.ps" />

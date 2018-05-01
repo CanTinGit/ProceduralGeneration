@@ -47,6 +47,7 @@ const float SCREEN_NEAR = 0.1f;
 #include "watershaderclass.h"
 #include "soundclass.h"
 #include "bitmapclass.h"
+#include "greyshaderclass.h"
 
 
 
@@ -72,7 +73,6 @@ private:
 	bool RenderHorizontalBlurToTexture();
 	bool RenderVerticalBlurToTexture();
 	bool UpSampleTexture();
-	bool Render2DTextureScene();
 	bool Render();
 	void RenderRefractionToTexture();
 	void RenderReflectionToTexture();
@@ -114,8 +114,13 @@ private:
 
 	SoundClass *m_backgroundSound, *m_coinSound;
 
-	BitmapClass *m_OpeningUI, *m_EndUI;
-	bool isOpen, isEnd;
+	BitmapClass *m_OpeningUI, *m_EndUI, *m_greyScreen;
+	bool isOpen, isEnd, isblur, isgrey;
+	D3DXMATRIX baseViewMatrix;
+
+	GreyShaderClass *m_greyShader;
+	
+	int coinCounter;
 };
 
 #endif

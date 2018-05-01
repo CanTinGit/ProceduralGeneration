@@ -132,6 +132,9 @@
     <ClCompile Include="soundclass.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="greyshaderclass.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="applicationclass.h">
@@ -248,6 +251,9 @@
     <ClInclude Include="soundclass.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="greyshaderclass.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="terrain.vs">
@@ -314,6 +320,9 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="water.ps">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="grey.ps">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

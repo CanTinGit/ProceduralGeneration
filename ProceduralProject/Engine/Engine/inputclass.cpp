@@ -212,11 +212,11 @@ void InputClass::ProcessInput()
 	m_mouseY += m_mouseState.lY;
 
 	// Ensure the mouse location doesn't exceed the screen width or height.
-	if(m_mouseX < 0)  { m_mouseX = 0; }
-	if(m_mouseY < 0)  { m_mouseY = 0; }
-	
-	if(m_mouseX > m_screenWidth)  { m_mouseX = m_screenWidth; }
-	if(m_mouseY > m_screenHeight) { m_mouseY = m_screenHeight; }
+	//if(m_mouseX < 0)  { m_mouseX = 0; }
+	//if(m_mouseY < 0)  { m_mouseY = 0; }
+	//
+	//if(m_mouseX > m_screenWidth)  { m_mouseX = m_screenWidth; }
+	//if(m_mouseY > m_screenHeight) { m_mouseY = m_screenHeight; }
 	
 	return;
 }
@@ -279,7 +279,7 @@ bool InputClass::IsRightPressed()
 bool InputClass::IsUpPressed()
 {
 	// Do a bitwise and on the keyboard state to check if the key is currently being pressed.
-	if(m_keyboardState[DIK_UP] & 0x80)
+	if(m_keyboardState[DIK_W] & 0x80)
 	{
 		return true;
 	}
@@ -291,7 +291,7 @@ bool InputClass::IsUpPressed()
 bool InputClass::IsDownPressed()
 {
 	// Do a bitwise and on the keyboard state to check if the key is currently being pressed.
-	if(m_keyboardState[DIK_DOWN] & 0x80)
+	if(m_keyboardState[DIK_S] & 0x80)
 	{
 		return true;
 	}
@@ -344,5 +344,39 @@ bool InputClass::IsPgDownPressed()
 		return true;
 	}
 
+	return false;
+}
+
+bool InputClass::IsBPressed()
+{
+	static int time = 0;
+	if (m_keyboardState[DIK_B] & 0x80)
+	{
+		time++;
+		if (time == 1)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	time = 0;
+	return false;
+}
+
+bool InputClass::IsGPressed()
+{
+	static int time = 0;
+	if (m_keyboardState[DIK_G] & 0x80)
+	{
+		time++;
+		if (time == 1)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	time = 0;
 	return false;
 }

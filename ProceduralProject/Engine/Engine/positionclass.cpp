@@ -372,12 +372,13 @@ void PositionClass::LookDownward(bool keydown)
 	return;
 }
 
-bool PositionClass::CheckPosition() 
+bool PositionClass::CheckPosition(int& coinCounter) 
 {
 	if (m_positionX < m_coinPositionX + offset && m_positionX > m_coinPositionX - offset)
 	{
 		if (m_positionZ < m_coinPositionZ + offset && m_positionZ > m_coinPositionZ - offset)
 		{
+			coinCounter++;
 			RandomCoinPosition();
 		}
 		
@@ -392,4 +393,9 @@ void PositionClass::RandomCoinPosition()
 	m_coinPositionX = rand() % 255 + 1;
 	srand(m_coinPositionX);
 	m_coinPositionZ = rand() % 255 + 1;
+}
+
+void PositionClass::Rotate(int mouX, int mouY) {
+	m_rotationY = (float)mouX/3.0f;
+	m_rotationX = (float)mouY/3.0f;
 }
